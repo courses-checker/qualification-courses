@@ -2971,15 +2971,24 @@ def is_quality_response(response):
         return True
     
     return True  # Default to true if not obviously bad
-from serpapi import GoogleSearch
+from serpapi import Client
 import json
 
 def search_kuccps_info(query):
-    """
-    Search for KUCCPS-related information with targeted sources
-    Uses SERPAPI for reliable, formatted search results
-    """
+    """Search for KUCCPS-related information with targeted sources"""
     try:
+        # Try different import approaches
+        try:
+            from serpapi import GoogleSearch
+            use_old_style = True
+        except ImportError:
+            try:
+                from serpapi import Client
+                use_old_style = False
+            except ImportError:
+                print("⚠️ SERPAPI not available")
+                return None
+        
         SERPAPI_KEY = os.getenv('SERPAPI_KEY')
         if not SERPAPI_KEY:
             print("⚠️ SERPAPI key not configured")
@@ -3009,8 +3018,13 @@ def search_kuccps_info(query):
             "google_domain": "google.co.ke"  # Use Kenya Google
         }
         
-        search = GoogleSearch(params)
-        results = search.get_dict()
+        # Use the appropriate client based on what's available
+        if use_old_style:
+            search = GoogleSearch(params)
+            results = search.get_dict()
+        else:
+            client = Client()
+            results = client.search(params)
         
         if "organic_results" in results:
             organic_results = results["organic_results"]
@@ -3027,7 +3041,6 @@ def search_kuccps_info(query):
     except Exception as e:
         print(f"❌ Error searching: {str(e)}")
         return None
-
 def format_search_results(results, query):
     """Format search results into a helpful, natural response"""
     
