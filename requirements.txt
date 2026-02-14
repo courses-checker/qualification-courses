@@ -11,19 +11,19 @@ dnspython==2.8.0
 Flask==3.1.2
 Flask-Caching==2.3.1
 
-# Google AI stack (latest compatible versions)
-google-ai-generativelanguage==0.10.0
-google-generativeai==0.10.0
-google-api-core==2.29.0
+# Google AI stack (stable versions compatible with protobuf 5.x)
+google-ai-generativelanguage==0.6.15
+google-generativeai==0.8.6
+google-api-core==2.11.0
 google-api-python-client==2.190.0
 google-auth==2.48.0
 google-auth-httplib2==0.3.0
 googleapis-common-protos==1.72.0
 
-# gRPC + protobuf (aligned with latest Google AI libs)
-grpcio==1.75.1
-grpcio-status==1.75.1
-protobuf==6.33.0
+# gRPC + protobuf (aligned with protobuf 5.x)
+grpcio==1.49.1
+grpcio-status==1.49.1
+protobuf==5.26.1
 proto-plus==1.27.1
 
 httplib2==0.31.2
