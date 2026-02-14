@@ -1,4 +1,4 @@
-# Core Flask and web frameworks
+# Core Flask
 Flask==3.0.3
 Flask-Caching==2.3.1
 Flask-Cors==5.0.0
@@ -13,17 +13,17 @@ blinker==1.8.2
 pymongo==4.8.0
 dnspython==2.6.1
 
-# HTTP requests
+# HTTP
 requests==2.32.3
 urllib3==2.2.3
 certifi==2024.8.30
 charset-normalizer==3.3.2
 idna==3.10
 
-# Environment variables
+# Environment
 python-dotenv==1.0.1
 
-# AI and ML
+# AI
 google-generativeai==0.8.3
 google-ai-generativelanguage==0.6.10
 google-api-core==2.19.2
@@ -39,40 +39,19 @@ rsa==4.9
 tqdm==4.67.1
 typing_extensions==4.12.2
 
-# gRPC (needed for Google APIs)
+# gRPC
 grpcio==1.62.3
 grpcio-status==1.62.3
 
-# Serialization
-simplejson==3.19.3
+# SERPAPI - Try both packages
+serpapi==0.1.5
+google-search-results==2.4.2
 
-# Date/time handling
+# Utilities
+gunicorn==23.0.0
+redis==5.2.0
 python-dateutil==2.9.0.post0
 pytz==2024.2
 six==1.16.0
-
-# Web serving
-gunicorn==23.0.0
-packaging==24.2
-
-# Security
-bcrypt==4.2.0
-cryptography==43.0.3
-cffi==1.17.1
-pycparser==2.22
-
-# Additional utilities
-redis==5.2.0
-importlib_metadata==8.5.0
-zipp==3.21.0
-
-# Build tools
 setuptools==75.1.0
 wheel==0.44.0
-
-# Missing dependency - SERPAPI for web search functionality
-serpapi==0.1.5
-
-# Additional search-related dependencies
-beautifulsoup4==4.12.3
-soupsieve==2.5
