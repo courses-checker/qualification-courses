@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Required{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <!-- Paystack Configuration Data -->
+  <div id="paystack-config" 
+       data-public-key="{{ paystack_public_key }}"
+       data-email="{{ session.get('email') }}"
+       data-amount="{{ amount }}"
+       data-flow="{{ flow }}"
+       data-index="{{ session.get('index_number', '') }}"
+       style="display: none;">
+  </div>
+
+  <!-- Payment Modal Trigger Button (hidden, auto-clicked) -->
+  <button type="button" id="openPaymentModal" class="btn btn-primary" data-bs-toggle="modal"
+    data-bs-target="#paymentModal" style="display:none;">Open Payment Modal</button>
+
+  <!-- Payment Modal -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" role="dialog"
+    aria-modal="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="paymentModalLabel">Payment Required</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="cancelButton"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <!-- Payment Information -->
+          <div class="payment-info mb-4">
+            <p class="text-muted mb-2">Course Category: <span class="fw-bold text-dark">{{ flow.upper() }}</span></p>
+            <p class="text-muted mb-2">Amount to pay: <span class="fw-bold text-dark">KES {{ amount }}</span></p>
+            <div class="alert alert-light border mt-3 mb-0">
+              <p class="mb-1 small">
+                {% if is_first_category %}
+                First category price
+                {% else %}
+                Discounted price for additional category
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="payment-methods mb-4">
+            <h6 class="fw-bold mb-3">Select Payment Method</h6>
+            
+            <!-- Card Payment Option -->
+            <div class="form-check mb-3 p-3 border rounded-3" style="cursor: pointer;" onclick="document.getElementById('cardOption').click();">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="cardOption" value="card" checked>
+              <label class="form-check-label fw-bold" for="cardOption">
+                <i class="fas fa-credit-card me-2 text-primary"></i> Pay with Card
+              </label>
+              <div class="ms-4 mt-2 small text-muted">
+                <i class="fas fa-lock me-1"></i> Visa, Mastercard, Verve
+              </div>
+            </div>
+
+            <!-- Bank Transfer Option -->
+            <div class="form-check mb-3 p-3 border rounded-3" style="cursor: pointer;" onclick="document.getElementById('bankOption').click();">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="bankOption" value="bank">
+              <label class="form-check-label fw-bold" for="bankOption">
+                <i class="fas fa-university me-2 text-success"></i> Bank Transfer
+              </label>
+              <div class="ms-4 mt-2 small text-muted">
+                <i class="fas fa-clock me-1"></i> Instant confirmation via Paystack
+              </div>
+            </div>
+
+            <!-- Mobile Money Option -->
+            <div class="form-check mb-3 p-3 border rounded-3" style="cursor: pointer;" onclick="document.getElementById('mobileOption').click();">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="mobileOption" value="mobile_money">
+              <label class="form-check-label fw-bold" for="mobileOption">
+                <i class="fas fa-mobile-alt me-2 text-warning"></i> Mobile Money
+              </label>
+              <div class="ms-4 mt-2 small text-muted">
+                <i class="fas fa-shield-alt me-1"></i> M-Pesa, Airtel Money
+              </div>
+            </div>
+
+            <!-- USSD Option -->
+            <div class="form-check p-3 border rounded-3" style="cursor: pointer;" onclick="document.getElementById('ussdOption').click();">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="ussdOption" value="ussd">
+              <label class="form-check-label fw-bold" for="ussdOption">
+                <i class="fas fa-dial me-2 text-info"></i> USSD
+              </label>
+              <div class="ms-4 mt-2 small text-muted">
+                <i class="fas fa-phone me-1"></i> Dial USSD code on your phone
+              </div>
+            </div>
+          </div>
+
+          <!-- Pay Now Button -->
+          <div class="d-grid gap-2">
+            <button type="button" class="btn btn-primary btn-lg fw-bold" id="payButton">
+              <span id="payButtonText">Pay KES {{ amount }}</span>
+              <span id="payButtonSpinner" class="spinner-border spinner-border-sm d-none ms-2" role="status"></span>
+            </button>
+          </div>
+
+          <!-- Security Badge -->
+          <div class="text-center mt-3">
+            <p class="small text-muted mb-0">
+              <i class="fas fa-lock me-1"></i> Secured by Paystack
+            </p>
+            <p class="small text-muted">
+              <i class="fas fa-shield-alt me-1"></i> 256-bit SSL Encryption
+            </p>
+          </div>
+
+          <!-- Payment Status Section -->
+          <div id="paymentStatus" class="mt-4 text-center" style="display: none;">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Processing payment...</span>
+            </div>
+            <h6 class="fw-bold">Redirecting to Payment Gateway</h6>
+            <p class="text-muted mb-2">Please wait while we redirect you to the secure payment page.</p>
+            <p class="small text-muted">Reference: <span id="transactionRef" class="fw-bold"></span></p>
+          </div>
+
+          <!-- Error Message Section -->
+          <div id="paymentError" class="alert alert-danger mt-3 text-center" style="display: none;">
+            <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i> Payment Error</h6>
+            <p id="errorMessage" class="mb-0"></p>
+            <button class="btn btn-outline-danger btn-sm mt-2" onclick="location.reload()">
+              <i class="fas fa-redo me-1"></i> Try Again
+            </button>
+          </div>
+
+          <!-- Payment Success Section (for fallback) -->
+          <div id="paymentSuccess" class="alert alert-success mt-3 text-center" style="display: none;">
+            <h6 class="fw-bold mb-2"><i class="fas fa-check-circle me-2"></i> Payment Successful!</h6>
+            <p id="successMessage" class="mb-0"></p>
+            <div class="mt-3">
+              <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+              <span>Redirecting to your results...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Load Paystack Inline Script -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    console.log('🚀 Payment page loaded with Paystack');
+
+    // Auto-open the modal on page load
+    const openModalButton = document.getElementById('openPaymentModal');
+    if (openModalButton) {
+      console.log('📱 Opening payment modal...');
+      openModalButton.click();
+    }
+
+    // Get Paystack configuration
+    const configElement = document.getElementById('paystack-config');
+    const publicKey = configElement.dataset.publicKey;
+    const email = configElement.dataset.email;
+    const amount = parseFloat(configElement.dataset.amount);
+    const flow = configElement.dataset.flow;
+    const indexNumber = configElement.dataset.index || '';
+
+    console.log('💰 Paystack Config:', { publicKey, email, amount, flow, indexNumber });
+
+    // 🔥 FIX: Generate a safe reference in JavaScript (matches backend format)
+    function generateSafeReference() {
+      // Remove all non-alphanumeric characters from index
+      const safeIndex = indexNumber.replace(/[^a-zA-Z0-9]/g, '');
+      
+      // Get current timestamp
+      const now = new Date();
+      const timestamp = 
+        now.getFullYear().toString() +
+        (now.getMonth() + 1).toString().padStart(2, '0') +
+        now.getDate().toString().padStart(2, '0') +
+        now.getHours().toString().padStart(2, '0') +
+        now.getMinutes().toString().padStart(2, '0') +
+        now.getSeconds().toString().padStart(2, '0');
+      
+      // Generate random number
+      const randomNum = Math.floor(Math.random() * 900) + 100;
+      
+      // Format: KUCCPS-flow-safexindex-timestamp-random
+      // ONLY alphanumeric and hyphens allowed
+      return `KUCCPS-${flow}-${safeIndex || 'USER'}-${timestamp}-${randomNum}`;
+    }
+
+    // Handle payment button click
+    const payButton = document.getElementById('payButton');
+    if (payButton) {
+      payButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        console.log('💳 Pay button clicked');
+
+        const payButtonText = document.getElementById('payButtonText');
+        const payButtonSpinner = document.getElementById('payButtonSpinner');
+        const errorDiv = document.getElementById('paymentError');
+        const statusDiv = document.getElementById('paymentStatus');
+        const transactionRef = document.getElementById('transactionRef');
+
+        // Hide any previous errors
+        if (errorDiv) {
+          errorDiv.style.display = 'none';
+        }
+
+        // Validate configuration
+        if (!publicKey || !email || !amount || !flow) {
+          showError('Payment configuration error. Please refresh and try again.');
+          return;
+        }
+
+        // Show loading state
+        payButton.disabled = true;
+        payButtonText.textContent = 'Redirecting to Paystack...';
+        payButtonSpinner.classList.remove('d-none');
+
+        // Generate safe reference
+        const reference = generateSafeReference();
+        console.log('🔍 Generated reference:', reference);
+
+        // Show status message
+        if (statusDiv) {
+          statusDiv.style.display = 'block';
+          if (transactionRef) {
+            transactionRef.textContent = reference;
+          }
+        }
+
+        // 🔥 FIX: Make API call to backend to initialize payment
+        // This ensures the backend also gets the sanitized reference
+        fetch(`/payment/${flow}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            amount: amount,
+            flow: flow,
+            reference: reference  // Send the generated reference
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.authorization_url) {
+            // Redirect to Paystack checkout page
+            window.location.href = data.authorization_url;
+          } else {
+            // Fallback to direct Paystack popup if backend fails
+            initializeDirectPaystack();
+          }
+        })
+        .catch(error => {
+          console.error('Backend payment init failed:', error);
+          // Fallback to direct Paystack popup
+          initializeDirectPaystack();
+        });
+
+        // Fallback function for direct Paystack initialization
+        function initializeDirectPaystack() {
+          // Get selected payment method
+          const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'card';
+          
+          // Map to Paystack channels
+          const channels = getPaystackChannels(selectedMethod);
+          
+          // Initialize Paystack payment directly
+          const handler = PaystackPop.setup({
+            key: publicKey,
+            email: email,
+            amount: amount * 100, // Convert to kobo
+            currency: 'KES',
+            ref: reference,
+            channels: channels,
+            metadata: {
+              flow: flow,
+              index_number: indexNumber,
+              custom_fields: [
+                {
+                  display_name: "Course Category",
+                  variable_name: "course_category",
+                  value: flow.toUpperCase()
+                }
+              ]
+            },
+            callback: function(response) {
+              // Payment successful - redirect to callback
+              console.log('✅ Payment successful:', response);
+              window.location.href = `/paystack/callback?reference=${response.reference}`;
+            },
+            onClose: function() {
+              // Payment window closed without completing
+              console.log('❌ Payment window closed by user');
+              resetPaymentButton();
+              alert('Payment cancelled. You can try again when ready.');
+            }
+          });
+
+          handler.openIframe();
+        }
+      });
+    }
+
+    // Helper function to get Paystack channels based on selected method
+    function getPaystackChannels(method) {
+      switch(method) {
+        case 'card':
+          return ['card'];
+        case 'bank':
+          return ['bank', 'bank_transfer'];
+        case 'mobile_money':
+          return ['mobile_money'];
+        case 'ussd':
+          return ['ussd'];
+        default:
+          return ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'];
+      }
+    }
+
+    // Show error function
+    function showError(message) {
+      const errorDiv = document.getElementById('paymentError');
+      const errorMessage = document.getElementById('errorMessage');
+      
+      resetPaymentButton();
+      
+      if (errorDiv && errorMessage) {
+        errorMessage.textContent = message;
+        errorDiv.style.display = 'block';
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        alert(message);
+      }
+    }
+
+    function resetPaymentButton() {
+      const payButton = document.getElementById('payButton');
+      const payButtonText = document.getElementById('payButtonText');
+      const payButtonSpinner = document.getElementById('payButtonSpinner');
+      const statusDiv = document.getElementById('paymentStatus');
+
+      if (payButton && payButtonText && payButtonSpinner) {
+        payButton.disabled = false;
+        payButtonText.textContent = `Pay KES {{ amount }}`;
+        payButtonSpinner.classList.add('d-none');
+      }
+
+      if (statusDiv) {
+        statusDiv.style.display = 'none';
+      }
+    }
+
+    // Handle cancel button
+    const cancelButton = document.getElementById('cancelButton');
+    if (cancelButton) {
+      cancelButton.addEventListener('click', function () {
+        console.log('❌ Payment cancelled by user');
+        window.location.href = `/enter-details/${flow}`;
+      });
+    }
+
+    // Prevent modal from closing during payment
+    const paymentModal = document.getElementById('paymentModal');
+    if (paymentModal) {
+      paymentModal.addEventListener('hide.bs.modal', function (e) {
+        const payButton = document.getElementById('payButton');
+        if (payButton && payButton.disabled) {
+          e.preventDefault();
+          alert('Payment is being processed. Please wait for completion.');
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-header {
+    padding: 1.5rem 1.5rem 0.5rem;
+  }
+
+  .modal-body {
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .payment-methods .form-check {
+    transition: all 0.2s ease;
+    background-color: #fff;
+  }
+
+  .payment-methods .form-check:hover {
+    background-color: #f8f9fa;
+    border-color: #0d6efd !important;
+  }
+
+  .payment-methods .form-check-input:checked + .form-check-label {
+    color: #0d6efd;
+  }
+
+  .form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+  }
+
+  .alert-light {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+  }
+
+  .modal-backdrop {
+    opacity: 0.5 !important;
+  }
+
+  .modal {
+    z-index: 1060;
+  }
+</style>
+{% endblock %}
