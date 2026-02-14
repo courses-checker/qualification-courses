@@ -23,7 +23,7 @@ idna==3.10
 # Environment variables
 python-dotenv==1.0.1
 
-# AI and ML - Use google-generativeai which might not need grpcio
+# AI and ML
 google-generativeai==0.8.3
 google-ai-generativelanguage==0.6.10
 google-api-core==2.19.2
@@ -39,9 +39,9 @@ rsa==4.9
 tqdm==4.67.1
 typing_extensions==4.12.2
 
-# Try to avoid grpcio if possible - comment these out initially
-# grpcio==1.62.3
-# grpcio-status==1.62.3
+# gRPC (needed for Google APIs)
+grpcio==1.62.3
+grpcio-status==1.62.3
 
 # Serialization
 simplejson==3.19.3
@@ -69,3 +69,10 @@ zipp==3.21.0
 # Build tools
 setuptools==75.1.0
 wheel==0.44.0
+
+# Missing dependency - SERPAPI for web search functionality
+serpapi==0.1.5
+
+# Additional search-related dependencies
+beautifulsoup4==4.12.3
+soupsieve==2.5

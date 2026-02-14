@@ -1,18 +1,24 @@
 services:
   - type: web
-    name: kuccps-app
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
-    autoDeploy: true
+    name: kuccps-courses
+    runtime: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_ENV
+        value: production
+      - key: SERPAPI_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
       - key: MONGODB_URI
         sync: false
-      - key: MPESA_CONSUMER_KEY
+      - key: PAYSTACK_SECRET_KEY
         sync: false
-      - key: MPESA_CONSUMER_SECRET
-        sync: false
-      - key: MPESA_PASSKEY
-        sync: false
-      - key: MPESA_SHORTCODE
+      - key: PAYSTACK_PUBLIC_KEY
         sync: false
