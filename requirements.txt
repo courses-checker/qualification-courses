@@ -1,49 +1,71 @@
-annotated-types==0.7.0
-blinker==1.9.0
-cachelib==0.13.0
-certifi==2026.1.4
-cffi==2.0.0
-charset-normalizer==3.4.4
-click==8.3.1
-colorama==0.4.6
-cryptography==46.0.5
-dnspython==2.8.0
-Flask==3.1.2
+# Core Flask and web frameworks
+Flask==3.0.3
 Flask-Caching==2.3.1
-
-# Google AI stack (stable versions compatible with protobuf 5.x)
-google-ai-generativelanguage==0.6.15
-google-generativeai==0.8.6
-google-api-core==2.11.0
-google-api-python-client==2.190.0
-google-auth==2.48.0
-google-auth-httplib2==0.3.0
-googleapis-common-protos==1.72.0
-
-# gRPC + protobuf (aligned with protobuf 5.x)
-grpcio==1.49.1
-grpcio-status==1.49.1
-protobuf==5.26.1
-proto-plus==1.27.1
-
-httplib2==0.31.2
-idna==3.11
+Flask-Cors==5.0.0
+Werkzeug==3.0.6
+Jinja2==3.1.4
+MarkupSafe==2.1.5
 itsdangerous==2.2.0
-Jinja2==3.1.6
-MarkupSafe==3.0.3
-pyasn1==0.6.2
-pyasn1_modules==0.4.2
-pycparser==3.0
-pydantic==2.12.5
-pydantic_core==2.41.5
-pymongo==4.16.0
-pyparsing==3.3.2
-python-dotenv==1.2.1
-requests==2.32.5
-rsa==4.9.1
-tqdm==4.67.3
-typing-inspection==0.4.2
-typing_extensions==4.15.0
-uritemplate==4.2.0
-urllib3==2.6.3
-Werkzeug==3.1.5
+click==8.1.7
+blinker==1.8.2
+
+# Database
+pymongo==4.8.0
+dnspython==2.6.1
+
+# HTTP requests
+requests==2.32.3
+urllib3==2.2.3
+certifi==2024.8.30
+charset-normalizer==3.3.2
+idna==3.10
+
+# Environment variables
+python-dotenv==1.0.1
+
+# AI and ML - Use google-generativeai which might not need grpcio
+google-generativeai==0.8.3
+google-ai-generativelanguage==0.6.10
+google-api-core==2.19.2
+google-auth==2.35.0
+google-auth-oauthlib==1.2.1
+googleapis-common-protos==1.65.0
+proto-plus==1.24.0
+protobuf==5.28.3
+cachetools==5.5.0
+pyasn1==0.6.1
+pyasn1-modules==0.4.1
+rsa==4.9
+tqdm==4.67.1
+typing_extensions==4.12.2
+
+# Try to avoid grpcio if possible - comment these out initially
+# grpcio==1.62.3
+# grpcio-status==1.62.3
+
+# Serialization
+simplejson==3.19.3
+
+# Date/time handling
+python-dateutil==2.9.0.post0
+pytz==2024.2
+six==1.16.0
+
+# Web serving
+gunicorn==23.0.0
+packaging==24.2
+
+# Security
+bcrypt==4.2.0
+cryptography==43.0.3
+cffi==1.17.1
+pycparser==2.22
+
+# Additional utilities
+redis==5.2.0
+importlib_metadata==8.5.0
+zipp==3.21.0
+
+# Build tools
+setuptools==75.1.0
+wheel==0.44.0
