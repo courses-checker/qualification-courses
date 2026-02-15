@@ -2,23 +2,20 @@ services:
   - type: web
     name: kuccps-courses
     runtime: python
-    plan: free
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
       - key: FLASK_ENV
         value: production
-      - key: SERPAPI_KEY
-        sync: false
-      - key: GEMINI_API_KEY
-        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
       - key: MONGODB_URI
         sync: false
       - key: PAYSTACK_SECRET_KEY
         sync: false
       - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SERPAPI_KEY
         sync: false
