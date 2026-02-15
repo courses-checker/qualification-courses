@@ -34,9 +34,9 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'default_secret_key_not_for_produ
 
 # Set SERVER_NAME for proper URL generation
 # This is critical for url_for() to work correctly with _external=True
-PRODUCTION_DOMAIN = 'www.kuccpscourses.co.ke'
-if os.getenv('FLASK_ENV') == 'production':
-    app.config['SERVER_NAME'] = PRODUCTION_DOMAIN
+#PRODUCTION_DOMAIN = 'www.kuccpscourses.co.ke'
+#if os.getenv('FLASK_ENV') == 'production':
+ #   app.config['SERVER_NAME'] = PRODUCTION_DOMAIN
 
 # Performance optimizations
 app.config['JSON_SORT_KEYS'] = False  # Avoid sorting JSON keys
