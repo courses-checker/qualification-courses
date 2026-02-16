@@ -3830,6 +3830,104 @@ def mark_payment_confirmed(transaction_ref, payment_receipt=None):
         print(f"❌ Error marking payment confirmed: {str(e)}")
         return False
 
+def create_optimized_indexes():
+    """Create indexes for faster queries"""
+    try:
+        # Compound index for fastest course retrieval
+        user_courses_collection.create_index(
+            [("email", 1), ("index_number", 1), ("level", 1)],
+            name="fast_course_lookup"
+        )
+        
+        # Index for payment verification
+        user_payments_collection.create_index(
+            [("transaction_ref", 1), ("payment_confirmed", 1)],
+            name="fast_payment_verify"
+        )
+        
+        # Index for basket retrieval
+        user_baskets_collection.create_index(
+            [("index_number", 1), ("is_active", 1)],
+            name="fast_basket_lookup"
+        )
+        
+        print("✅ Optimized indexes created")
+    except Exception as e:
+        print(f"⚠️ Index creation error: {e}")
+# Add at the top with other imports
+from concurrent.futures import ThreadPoolExecutor
+import queue
+import uuid
+
+# Create a thread pool for background tasks
+executor = ThreadPoolExecutor(max_workers=10)
+job_status = {}  # Track job status
+
+def process_courses_job(job_id, email, index_number, flow, payment_ref):
+    """Process courses in background with job tracking"""
+    try:
+        print(f"🔄 Job {job_id}: Processing {flow} courses")
+        job_status[job_id] = {'status': 'processing', 'flow': flow}
+        
+        # Get payment data
+        payment_data = user_payments_collection.find_one({'transaction_ref': payment_ref})
+        if not payment_data:
+            job_status[job_id] = {'status': 'failed', 'error': 'Payment not found'}
+            return
+        
+        grade_data = payment_data.get('grade_data', {})
+        
+        # Qualification functions mapping
+        qualification_functions = {
+            'degree': lambda: get_qualifying_courses(
+                grade_data.get('grades', {}), 
+                grade_data.get('cluster_points', {})
+            ),
+            'diploma': lambda: get_qualifying_diploma_courses(
+                grade_data.get('grades', {}), 
+                grade_data.get('mean_grade', '')
+            ),
+            'certificate': lambda: get_qualifying_certificate_courses(
+                grade_data.get('grades', {}), 
+                grade_data.get('mean_grade', '')
+            ),
+            'artisan': lambda: get_qualifying_artisan_courses(
+                grade_data.get('grades', {}), 
+                grade_data.get('mean_grade', '')
+            ),
+            'kmtc': lambda: get_qualifying_kmtc_courses(
+                grade_data.get('grades', {}), 
+                grade_data.get('mean_grade', '')
+            ),
+            'ttc': lambda: get_qualifying_ttc(
+                grade_data.get('grades', {}), 
+                grade_data.get('mean_grade', '')
+            )
+        }
+        
+        # Get qualifying courses
+        if flow in qualification_functions:
+            qualifying_courses = qualification_functions[flow]()
+        else:
+            qualifying_courses = []
+        
+        # Save to database
+        if qualifying_courses:
+            save_user_courses(email, index_number, flow, qualifying_courses)
+            job_status[job_id] = {
+                'status': 'completed', 
+                'count': len(qualifying_courses),
+                'flow': flow
+            }
+            print(f"✅ Job {job_id}: Saved {len(qualifying_courses)} courses")
+        else:
+            save_user_courses(email, index_number, flow, [])
+            job_status[job_id] = {'status': 'completed', 'count': 0, 'flow': flow}
+            print(f"⚠️ Job {job_id}: No courses found")
+            
+    except Exception as e:
+        print(f"❌ Job {job_id}: Error - {str(e)}")
+        job_status[job_id] = {'status': 'failed', 'error': str(e)}
 # --- Course Processing & Qualification Functions ---
 def process_courses_after_payment(email, index_number, flow):
     """Process and save courses after payment confirmation - WITH CACHE TRACKING"""
@@ -5058,7 +5156,7 @@ def enter_details(flow):
         print(f"🔍 Checking existing paid categories for {email}")
         existing_categories = get_user_paid_categories(email, index_number)
         is_first_category = len(existing_categories) == 0
-        amount = 2 if is_first_category else 1
+        amount = 200 if is_first_category else 100
         
         print(f"💰 Pricing - First category: {is_first_category}, Amount: {amount}, Existing categories: {existing_categories}")
         
