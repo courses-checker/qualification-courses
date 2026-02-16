@@ -1536,7 +1536,7 @@
             <!-- Desktop Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                                    <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link active" href="/">
                             <i class="fas fa-home"></i> Home
                         </a>
@@ -1546,8 +1546,6 @@
                             <i class="fas fa-check-circle"></i> My Paid Courses
                         </a>
                     </li>
-                                      
-                   
                     <li class="nav-item">
                         <a class="nav-link" href="https://students.kuccps.net/login" target="_blank" rel="noopener noreferrer">
                             <i class="fas fa-external-link-alt"></i> KUCCPS Portal
@@ -1838,13 +1836,15 @@
         </div>
     </div>
 
-    <!-- Verify Payment Modal -->
+    <!-- ============================================
+        VERIFY PAYMENT MODAL - SIMPLIFIED FOR M-PESA ONLY
+    ============================================= -->
     <div class="modal fade modal-custom" id="verifyPaymentModal" tabindex="-1" aria-labelledby="verifyPaymentLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="verifyPaymentLabel">
-                        <i class="fas fa-check-circle me-2"></i>Verify Payment & Access Courses
+                        <i class="fas fa-check-circle me-2"></i>Access Your Paid Courses
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -1853,31 +1853,15 @@
                         <div class="d-flex align-items-start">
                             <i class="fas fa-info-circle me-3 mt-1" style="font-size: 1.1rem;"></i>
                             <div>
-                                <h6 class="alert-heading">How to Verify</h6>
-                                <p class="mb-0">Enter your M-Pesa receipt number and KCSE index number to view all your qualified courses instantly.</p>
+                                <h6 class="alert-heading">How to Access Your Courses</h6>
+                                <p class="mb-0">Enter your KCSE index number and the M-Pesa receipt number you received via SMS after payment.</p>
                             </div>
                         </div>
                     </div>
 
                     <form id="verifyPaymentForm" class="needs-validation" novalidate>
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="mpesa_receipt" class="form-label-custom">
-                                    <i class="fas fa-receipt me-2"></i>M-Pesa Receipt Number *
-                                </label>
-                                <div class="input-group input-group-custom">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-mobile-alt"></i>
-                                    </span>
-                                    <input type="text" class="form-control form-control-custom" id="mpesa_receipt" 
-                                           name="mpesa_receipt" placeholder="RJ89A5LBQ2" required maxlength="10"
-                                           pattern="[A-Z0-9]{10}">
-                                </div>
-                                <div class="form-text text-muted mt-1">
-                                    <i class="fas fa-lightbulb me-1"></i>10-character code from your M-Pesa confirmation message
-                                </div>
-                            </div>
-                            <div class="col-md-6">
+                            <div class="col-md-12 mb-3">
                                 <label for="index_number_verify" class="form-label-custom">
                                     <i class="fas fa-id-card me-2"></i>KCSE Index Number *
                                 </label>
@@ -1886,11 +1870,28 @@
                                         <i class="fas fa-graduation-cap"></i>
                                     </span>
                                     <input type="text" class="form-control form-control-custom" id="index_number_verify"
-                                           name="index_number" placeholder="12345678902/2025" required
+                                           name="index_number" placeholder="12345678901/2024" required
                                            pattern="\d{11}/\d{4}">
                                 </div>
                                 <div class="form-text text-muted mt-1">
-                                    <i class="fas fa-lightbulb me-1"></i>Format: 12345678902/2025 (11 digits/year)
+                                    <i class="fas fa-lightbulb me-1"></i>Format: 12345678901/2024 (11 digits/year)
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label for="mpesa_receipt" class="form-label-custom">
+                                    <i class="fas fa-receipt me-2"></i>M-Pesa Receipt Number *
+                                </label>
+                                <div class="input-group input-group-custom">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-mobile-alt"></i>
+                                    </span>
+                                    <input type="text" class="form-control form-control-custom" id="mpesa_receipt" 
+                                           name="mpesa_receipt" placeholder="UBG9D6ZO3J" required
+                                           pattern="[A-Z0-9]{8,10}" maxlength="10">
+                                </div>
+                                <div class="form-text text-muted mt-1">
+                                    <i class="fas fa-lightbulb me-1"></i>8-10 character code from your M-Pesa confirmation SMS (e.g., UBG9D6ZO3J)
                                 </div>
                             </div>
                         </div>
@@ -1903,7 +1904,7 @@
                             <div class="spinner-border spinner-custom" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
-                            <p class="mt-3 fw-semibold">Verifying your payment credentials...</p>
+                            <p class="mt-3 fw-semibold">Verifying your payment...</p>
                             <div class="progress mt-3" style="height: 6px; border-radius: 10px; overflow: hidden;">
                                 <div class="progress-bar progress-bar-striped progress-bar-animated" 
                                      style="width: 100%; background: var(--gradient-red);"></div>
@@ -1923,22 +1924,22 @@
                                     
                                     <div class="mb-4">
                                         <h6 class="fw-semibold mb-3" style="color: var(--dark-grey);">
-                                            <i class="fas fa-layer-group me-2"></i>Available Course Levels:
+                                            <i class="fas fa-layer-group me-2"></i>Your Paid Course Categories:
                                         </h6>
                                         <div id="courseLevels" class="d-flex flex-wrap gap-2"></div>
                                     </div>
                                     
-                                    <div class="alert alert-info alert-custom">
-                                        <i class="fas fa-lightbulb me-2"></i>
-                                        You can now explore all courses available for your KCSE results.
+                                    <div class="alert alert-success alert-custom">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <span id="totalCoursesMessage"></span>
                                     </div>
                                     
                                     <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
                                         <button type="button" id="showResultsBtn" class="btn btn-yellow-custom">
-                                            <i class="fas fa-graduation-cap me-2"></i>View All Courses
+                                            <i class="fas fa-graduation-cap me-2"></i>View My Courses
                                         </button>
-                                        <button type="button" id="cancelPreviewBtn" class="btn btn-outline-secondary">
-                                            Close Preview
+                                        <button type="button" id="cancelPreviewBtn" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                            Close
                                         </button>
                                     </div>
                                 </div>
@@ -1948,7 +1949,7 @@
                         <!-- Form Actions -->
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary-custom py-2" id="verifySubmitBtn">
-                                <i class="fas fa-search me-2"></i>Verify & View Courses
+                                <i class="fas fa-search me-2"></i>Verify & Access Courses
                             </button>
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                 Cancel
@@ -2091,7 +2092,7 @@
     {% block scripts %}{% endblock %}
     
     <!-- ============================================
-        MAIN JAVASCRIPT
+        MAIN JAVASCRIPT - SIMPLIFIED M-PESA VERIFICATION
     ============================================= -->
     <script>
         // ============================================
@@ -2139,7 +2140,7 @@
             // Initialize all components
             initNavigation();
             initBackToTop();
-            initVerifyPaymentForm();
+            initVerifyPaymentForm(); // Simplified M-Pesa verification
             initPWAFeatures();
             initNewsSystem();
             initScrollEffects();
@@ -2225,7 +2226,7 @@
         }
         
         // ============================================
-        // VERIFY PAYMENT FORM
+        // VERIFY PAYMENT FORM - SIMPLIFIED M-PESA ONLY
         // ============================================
         function initVerifyPaymentForm() {
             const verifyPaymentForm = document.getElementById('verifyPaymentForm');
@@ -2236,8 +2237,9 @@
             verifyPaymentForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                const mpesaReceipt = document.getElementById('mpesa_receipt').value.trim().toUpperCase();
                 const indexNumber = document.getElementById('index_number_verify').value.trim();
+                const mpesaReceipt = document.getElementById('mpesa_receipt').value.trim().toUpperCase();
+                
                 const errorDiv = document.getElementById('verifyError');
                 const loadingDiv = document.getElementById('verifyLoading');
                 const submitBtn = document.getElementById('verifySubmitBtn');
@@ -2250,105 +2252,115 @@
                 previewDiv.style.display = 'none';
                 
                 // Validate inputs
-                if (!mpesaReceipt || !indexNumber) {
-                    showError('Please fill in all required fields');
-                    return;
-                }
-                
-                if (!/^[A-Z0-9]{10}$/.test(mpesaReceipt)) {
-                    showError('Invalid M-Pesa receipt format. Must be exactly 10 alphanumeric characters (e.g., RJ89A5LBQ2).');
+                if (!indexNumber || !mpesaReceipt) {
+                    showVerificationError('Please enter both Index Number and M-Pesa Receipt');
                     return;
                 }
                 
                 if (!/^\d{11}\/\d{4}$/.test(indexNumber)) {
-                    showError('Invalid index number format. Must be: 12345678901/2024 (11 digits/year)');
+                    showVerificationError('Invalid index number format. Must be: 12345678901/2024 (11 digits/year)');
+                    return;
+                }
+                
+                if (mpesaReceipt.length < 5) {
+                    showVerificationError('Invalid M-Pesa receipt. Please enter the receipt from your SMS');
                     return;
                 }
                 
                 try {
+                    console.log('Sending verification request:', {
+                        index_number: indexNumber,
+                        payment_reference: mpesaReceipt
+                    });
+                    
                     const response = await fetch('/verify-payment', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Content-Type': 'application/json',
                         },
-                        body: new URLSearchParams({
-                            'mpesa_receipt': mpesaReceipt,
-                            'index_number': indexNumber
+                        body: JSON.stringify({
+                            index_number: indexNumber,
+                            payment_reference: mpesaReceipt
                         })
                     });
                     
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
                     const data = await response.json();
+                    console.log('Response received:', data);
+                    
                     loadingDiv.style.display = 'none';
                     submitBtn.disabled = false;
                     
                     if (data.success) {
                         // Payment verified successfully
-                        handleVerificationSuccess(data, mpesaReceipt, indexNumber);
+                        handleVerificationSuccess(data, indexNumber, mpesaReceipt);
                     } else {
-                        showError(data.error || 'Verification failed. Please check your details and try again.');
+                        showVerificationError(data.error || 'Verification failed. Please check your details and try again.');
                     }
                 } catch (error) {
                     console.error('Verification error:', error);
                     loadingDiv.style.display = 'none';
                     submitBtn.disabled = false;
-                    showError('Network error. Please check your connection and try again.');
+                    showVerificationError('Network error. Please check your connection.');
                 }
             });
             
             // Reset form when modal is hidden
-            verifyPaymentModal.addEventListener('hidden.bs.modal', function() {
-                verifyPaymentForm.reset();
-                document.getElementById('verifyError').style.display = 'none';
-                document.getElementById('verifyLoading').style.display = 'none';
-                document.getElementById('verifyPreview').style.display = 'none';
-                document.getElementById('verifySubmitBtn').disabled = false;
-            });
-            
-            // Check for existing verification on page load
-            if (sessionStorage.getItem('userVerified')) {
-                loadBasketCount();
+            if (verifyPaymentModal) {
+                verifyPaymentModal.addEventListener('hidden.bs.modal', function() {
+                    verifyPaymentForm.reset();
+                    errorDiv.style.display = 'none';
+                    loadingDiv.style.display = 'none';
+                    previewDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                });
             }
         }
         
-        function showError(message) {
+        function showVerificationError(message) {
             const errorDiv = document.getElementById('verifyError');
             errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
             errorDiv.style.display = 'block';
             const loadingDiv = document.getElementById('verifyLoading');
-            loadingDiv.style.display = 'none';
+            if (loadingDiv) loadingDiv.style.display = 'none';
             const submitBtn = document.getElementById('verifySubmitBtn');
-            submitBtn.disabled = false;
+            if (submitBtn) submitBtn.disabled = false;
         }
         
-        function handleVerificationSuccess(data, mpesaReceipt, indexNumber) {
+        function handleVerificationSuccess(data, indexNumber, mpesaReceipt) {
+            console.log('Success! Data:', data);
+            
             // Store verification in sessionStorage
             sessionStorage.setItem('userVerified', 'true');
             sessionStorage.setItem('userIndex', indexNumber);
-            sessionStorage.setItem('userReceipt', mpesaReceipt);
+            sessionStorage.setItem('mpesaReceipt', mpesaReceipt);
             
             // Show preview with course information
-            showPreview(data, indexNumber, mpesaReceipt);
+            showVerificationPreview(data, indexNumber, mpesaReceipt);
         }
         
-        function showPreview(data, indexNumber, mpesaReceipt) {
+        function showVerificationPreview(data, indexNumber, mpesaReceipt) {
             const previewDiv = document.getElementById('verifyPreview');
             const previewInfo = document.getElementById('previewInfo');
             const courseLevels = document.getElementById('courseLevels');
             const showResultsBtn = document.getElementById('showResultsBtn');
-            const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
+            const totalCoursesMessage = document.getElementById('totalCoursesMessage');
+            
+            if (!previewDiv || !previewInfo || !courseLevels || !showResultsBtn) {
+                console.error('Preview elements not found');
+                return;
+            }
             
             // Update preview information
             previewInfo.innerHTML = `
+                <div class="alert alert-success mb-3">
+                    <i class="fas fa-check-circle me-2"></i>Payment Verified Successfully!
+                </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-id-card me-2"></i>Index Number:</strong><br>${data.index_number || indexNumber}</p>
+                        <p><strong><i class="fas fa-id-card me-2"></i>Index Number:</strong><br>${indexNumber}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-receipt me-2"></i>Receipt:</strong><br>${data.mpesa_receipt || mpesaReceipt}</p>
+                        <p><strong><i class="fas fa-receipt me-2"></i>M-Pesa Receipt:</strong><br>${mpesaReceipt}</p>
                     </div>
                 </div>
                 <div class="row mt-2">
@@ -2359,63 +2371,54 @@
             `;
             
             // Update course levels
-            updateCourseLevels(data.levels);
+            updateCourseLevelsDisplay(data.levels, data.level_details);
+            
+            // Update total courses message
+            if (totalCoursesMessage) {
+                totalCoursesMessage.textContent = `You have access to ${data.courses_count || 0} courses across ${data.levels?.length || 0} categories.`;
+            }
             
             // Update show results button
-            setupResultsButton(data, indexNumber, mpesaReceipt);
-            
-            // Cancel preview button
-            cancelPreviewBtn.onclick = function() {
-                previewDiv.style.display = 'none';
-                document.getElementById('verifyPaymentForm').reset();
-            };
-            
-            // Show preview
-            previewDiv.style.display = 'block';
-            previewDiv.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function updateCourseLevels(levels) {
-            const courseLevels = document.getElementById('courseLevels');
-            courseLevels.innerHTML = '';
-            
-            if (levels && levels.length > 0) {
-                levels.forEach(level => {
-                    const badge = document.createElement('span');
-                    badge.className = 'badge px-3 py-2 me-2 mb-2';
-                    badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.9rem; color: white;';
-                    badge.innerHTML = `<i class="fas fa-university me-1"></i>${level.toUpperCase()}`;
-                    courseLevels.appendChild(badge);
-                });
-            } else {
-                courseLevels.innerHTML = '<p class="text-muted">No course levels found</p>';
-            }
-        }
-        
-        function setupResultsButton(data, indexNumber, mpesaReceipt) {
-            const showResultsBtn = document.getElementById('showResultsBtn');
             showResultsBtn.onclick = function() {
                 if (data.redirect_url) {
                     window.location.href = data.redirect_url;
                 } else {
-                    const params = new URLSearchParams({
-                        index: data.index_number || indexNumber,
-                        receipt: data.mpesa_receipt || mpesaReceipt
-                    });
-                    window.location.href = `/verified-dashboard?${params.toString()}`;
+                    window.location.href = `/verified-dashboard?index=${indexNumber}&receipt=${mpesaReceipt}`;
                 }
             };
+            
+            // Show preview
+            previewDiv.style.display = 'block';
+            previewDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         
-        async function loadBasketCount() {
-            try {
-                const response = await fetch('/load-basket');
-                const basketData = await response.json();
-                if (basketData.success && basketData.basket_count > 0) {
-                    showBasketNavigation(basketData.basket_count);
-                }
-            } catch (error) {
-                console.log('No saved basket found');
+        function updateCourseLevelsDisplay(levels, levelDetails) {
+            const courseLevels = document.getElementById('courseLevels');
+            if (!courseLevels) return;
+            
+            courseLevels.innerHTML = '';
+            
+            if (levels && levels.length > 0) {
+                levels.forEach(level => {
+                    const count = levelDetails && levelDetails[level] ? levelDetails[level].count : 0;
+                    const badge = document.createElement('span');
+                    badge.className = 'badge px-3 py-2 me-2 mb-2';
+                    badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.9rem; color: white; border-radius: 20px;';
+                    
+                    // Map level to display name
+                    let displayName = level;
+                    if (level === 'degree') displayName = 'Degree';
+                    else if (level === 'diploma') displayName = 'Diploma';
+                    else if (level === 'certificate') displayName = 'Certificate';
+                    else if (level === 'artisan') displayName = 'Artisan';
+                    else if (level === 'kmtc') displayName = 'KMTC';
+                    else if (level === 'ttc') displayName = 'TTC';
+                    
+                    badge.innerHTML = `<i class="fas fa-university me-1"></i>${displayName} (${count})`;
+                    courseLevels.appendChild(badge);
+                });
+            } else {
+                courseLevels.innerHTML = '<p class="text-muted">No paid course categories found</p>';
             }
         }
         
@@ -2634,7 +2637,10 @@
             setInterval(checkForNewNews, 10 * 60 * 1000);
             
             // News modal close handler
-            document.getElementById('closeNewsModalBtn').addEventListener('click', redirectToHome);
+            const closeNewsModalBtn = document.getElementById('closeNewsModalBtn');
+            if (closeNewsModalBtn) {
+                closeNewsModalBtn.addEventListener('click', redirectToHome);
+            }
         }
         
         async function loadLatestNews() {
@@ -2683,9 +2689,7 @@
                                     ${article.image_url ? `
                                     <div class="flex-shrink-0 me-3">
                                         <img src="${article.image_url}" alt="${article.title}" 
-     width="400" height="300"
-     class="img-fluid rounded" style="max-height: 300px; object-fit: cover;"
-     loading="lazy">
+                                             class="img-fluid rounded" style="max-width: 80px; max-height: 60px; object-fit: cover;"
                                              onerror="this.src='https://via.placeholder.com/80x60?text=News'">
                                     </div>
                                     ` : ''}
@@ -2714,7 +2718,7 @@
                     
                     newsContent.innerHTML = newsHTML;
                 } else {
-                    newsContent.innerHTML = `
+                    document.getElementById('newsContent').innerHTML = `
                         <div class="text-center py-4">
                             <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
                             <h5>No News Available</h5>
@@ -2901,23 +2905,26 @@
             });
             
             // Mark all news as read when news modal is opened
-            document.getElementById('newsModal').addEventListener('shown.bs.modal', function() {
-                const latestNewsId = localStorage.getItem('latestNewsId');
-                if (latestNewsId) {
-                    localStorage.setItem('lastSeenNewsId', latestNewsId);
-                    localStorage.setItem('unreadNewsCount', '0');
-                    
-                    const newsBadgeCount = document.getElementById('newsBadgeCount');
-                    if (newsBadgeCount) {
-                        newsBadgeCount.textContent = '0';
+            const newsModal = document.getElementById('newsModal');
+            if (newsModal) {
+                newsModal.addEventListener('shown.bs.modal', function() {
+                    const latestNewsId = localStorage.getItem('latestNewsId');
+                    if (latestNewsId) {
+                        localStorage.setItem('lastSeenNewsId', latestNewsId);
+                        localStorage.setItem('unreadNewsCount', '0');
+                        
+                        const newsBadgeCount = document.getElementById('newsBadgeCount');
+                        if (newsBadgeCount) {
+                            newsBadgeCount.textContent = '0';
+                        }
+                        
+                        const newsBellBtn = document.getElementById('newsBellBtn');
+                        if (newsBellBtn) {
+                            newsBellBtn.classList.remove('pulse');
+                        }
                     }
-                    
-                    const newsBellBtn = document.getElementById('newsBellBtn');
-                    if (newsBellBtn) {
-                        newsBellBtn.classList.remove('pulse');
-                    }
-                }
-            });
+                });
+            }
         }
     </script>
 

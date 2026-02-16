@@ -6700,53 +6700,53 @@ def show_collection_courses(flow, collection_name):
 # --- Payment Verification Routes ---
 @app.route('/verify-payment', methods=['POST'])
 def verify_payment():
-    """Verify payment and return course information for all levels - NOW WORKS WITH PAYSTACK"""
+    """Verify payment and return course information for all levels"""
     try:
-        payment_reference = request.form.get('payment_reference', '').strip().upper()
-        index_number = request.form.get('index_number', '').strip()
+        data = request.get_json()
+        
+        # 🔥 FIX: Check what fields are actually coming from frontend
+        print(f"📥 Received verification data: {data}")
+        
+        # Try different possible field names
+        payment_reference = data.get('payment_reference') or data.get('mpesa_receipt') or data.get('reference')
+        index_number = data.get('index_number')
         
         if not payment_reference or not index_number:
-            return jsonify({'success': False, 'error': 'Payment reference and index number are required'})
-        
-        # Validate index number format
-        if not re.match(r'^\d{11}/\d{4}$', index_number):
-            return jsonify({'success': False, 'error': 'Invalid index number format. Must be 11 digits, slash, 4 digits (e.g., 12345678901/2024)'})
+            return jsonify({
+                'success': False, 
+                'error': 'Payment reference and index number are required'
+            })
         
         print(f"🔍 Verifying payment for index: {index_number}, reference: {payment_reference}")
         
         # Find confirmed payments for this index number and reference
         payment_found = False
         paid_categories = []
+        user_email = None
         
         if database_connected:
-            # Search by either transaction_ref or payment_receipt for backward compatibility
+            # Search by transaction_ref (simple reference) OR mpesa_receipt
             payment_data = user_payments_collection.find({
                 'index_number': index_number,
                 '$or': [
                     {'transaction_ref': payment_reference},
-                    {'payment_receipt': payment_reference}
+                    {'mpesa_receipt': payment_reference},
+                    {'payment_receipt': payment_reference}  # For backward compatibility
                 ],
                 'payment_confirmed': True
             })
             
-            for payment in payment_data:
+            payments_list = list(payment_data)
+            
+            for payment in payments_list:
                 payment_found = True
                 level = payment.get('level')
                 if level and level not in paid_categories:
                     paid_categories.append(level)
-        else:
-            # Session fallback
-            for key in session:
-                if isinstance(session.get(key), dict):
-                    payment_data = session[key]
-                    if (payment_data.get('index_number') == index_number and 
-                        (payment_data.get('transaction_ref') == payment_reference or 
-                         payment_data.get('payment_receipt') == payment_reference) and
-                        payment_data.get('payment_confirmed')):
-                        payment_found = True
-                        level = payment_data.get('level')
-                        if level and level not in paid_categories:
-                            paid_categories.append(level)
+                    if not user_email:
+                        user_email = payment.get('email')
+            
+            print(f"✅ Found {len(payments_list)} confirmed payments for index: {index_number}")
         
         if not payment_found:
             print(f"❌ No confirmed payment found for index: {index_number}, reference: {payment_reference}")
@@ -6757,6 +6757,7 @@ def verify_payment():
         # Get courses for all paid categories
         user_courses = {}
         total_courses = 0
+        level_details = {}
         
         if database_connected:
             for level in paid_categories:
@@ -6766,13 +6767,31 @@ def verify_payment():
                 })
                 if courses_data and courses_data.get('courses'):
                     course_count = len(courses_data['courses'])
-                    user_courses[level] = {
-                        'count': course_count
+                    user_courses[level] = courses_data['courses']
+                    level_details[level] = {
+                        'count': course_count,
+                        'name': level.capitalize()
                     }
                     total_courses += course_count
                     print(f"📚 Found {course_count} {level} courses")
         
         if total_courses == 0:
+            # Check if courses are being processed
+            cache_key = f"{user_email}_{index_number}_{level}"
+            if cache_key in course_processing_cache:
+                cache_data = course_processing_cache[cache_key]
+                if isinstance(cache_data, dict) and cache_data.get('status') == 'processing':
+                    return jsonify({
+                        'success': True,
+                        'payment_confirmed': True,
+                        'courses_count': 0,
+                        'levels': paid_categories,
+                        'level_details': {level: {'count': 0, 'name': level.capitalize()} for level in paid_categories},
+                        'processing': True,
+                        'message': 'Your courses are still being generated. Please wait a moment.',
+                        'redirect_url': url_for('payment_wait', flow=paid_categories[0]) if paid_categories else None
+                    })
+            
             return jsonify({'success': False, 'error': 'No course results found for your payment. Please ensure you completed the qualification process.'})
         
         print(f"🎓 Total courses found: {total_courses} across {len(paid_categories)} categories")
@@ -6781,6 +6800,8 @@ def verify_payment():
         session['verified_payment'] = True
         session['verified_index'] = index_number
         session['verified_receipt'] = payment_reference
+        session['email'] = user_email or f"verified_{index_number}@temp.com"
+        session['index_number'] = index_number
         
         # Return success response with available categories
         return jsonify({
@@ -6788,7 +6809,8 @@ def verify_payment():
             'payment_confirmed': True,
             'courses_count': total_courses,
             'levels': paid_categories,
-            'level_details': user_courses,
+            'level_details': level_details,
+            'index_number': index_number,
             'redirect_url': url_for('verified_results_dashboard', index=index_number, receipt=payment_reference)
         })
         
@@ -6797,7 +6819,6 @@ def verify_payment():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': 'Internal server error. Please try again later.'})
-
 @app.route('/verified-dashboard')
 def verified_results_dashboard():
     """Dashboard showing all available course levels for verified payment"""
