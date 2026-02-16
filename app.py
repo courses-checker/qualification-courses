@@ -929,6 +929,30 @@ def meets_requirement(requirement_key, requirement_grade, user_grades):
             return GRADE_VALUES[user_grades[requirement_key]] >= GRADE_VALUES[parsed_grade]
         return False
 
+def check_artisan_course_qualification(course, user_grades, user_mean_grade):
+    """
+    Check if user qualifies for a specific artisan course
+    Artisan courses typically have minimal requirements
+    """
+    # If the course has minimum grade requirements
+    min_mean_grade = course.get('minimum_grade', {}).get('mean_grade')
+    
+    if min_mean_grade:
+        # If user's grade is lower than required, they don't qualify
+        if GRADE_VALUES.get(user_mean_grade, 0) < GRADE_VALUES.get(min_mean_grade, 0):
+            return False
+    
+    # Check subject requirements if any
+    requirements = course.get('minimum_subject_requirements', {})
+    
+    if requirements:
+        for subject_key, required_grade in requirements.items():
+            if not meets_requirement(subject_key, required_grade, user_grades):
+                return False
+    
+    # Default to True for artisan courses (most accessible)
+    return True
+
 def check_course_qualification(course, user_grades, user_cluster_points):
     """Check if user qualifies for a specific course based on subjects and cluster points"""
     requirements = course.get('minimum_subject_requirements', {})
