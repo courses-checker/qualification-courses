@@ -67,7 +67,7 @@ PAYSTACK_PUBLIC_KEY = os.getenv('PAYSTACK_PUBLIC_KEY')
 PAYSTACK_CALLBACK_URL = None  # Will be set per request
 
 print(f"💳 Paystack will use dynamic callback URLs based on request host")
-PAYSTACK_MODE = os.getenv('PAYSTACK_MODE', 'test')  # 'test' or 'live'
+PAYSTACK_MODE = os.getenv('PAYSTACK_MODE', 'live')  # 'test' or 'live'
 
 print(f"💳 Paystack callback URL set to: {PAYSTACK_CALLBACK_URL}")
 
@@ -5034,7 +5034,7 @@ def enter_details(flow):
         print(f"🔍 Checking existing paid categories for {email}")
         existing_categories = get_user_paid_categories(email, index_number)
         is_first_category = len(existing_categories) == 0
-        amount = 200 if is_first_category else 100
+        amount = 2 if is_first_category else 1
         
         print(f"💰 Pricing - First category: {is_first_category}, Amount: {amount}, Existing categories: {existing_categories}")
         
@@ -5375,7 +5375,7 @@ def paystack_callback():
         mpesa_receipt = verification_result.get('mpesa_receipt')
         
         print(f"✅ Paystack payment confirmed")
-        print(f"💰 M-PESA Receipt from SMS: {mpesa_receipt}")  # Will show like UBG9D6ZO3J
+        print(f"💰 M-PESA Receipt from SMS: {mpesa_receipt}")
         
         # Find payment record
         flow = None
@@ -5399,7 +5399,7 @@ def paystack_callback():
                 user_payments_collection.update_one(
                     {'transaction_ref': payment_ref},
                     {'$set': {
-                        'mpesa_receipt': mpesa_receipt,  # Store the SMS receipt (UBG9D6ZO3J)
+                        'mpesa_receipt': mpesa_receipt,
                         'payment_method': 'M-PESA',
                         'payment_channel': verification_result.get('channel'),
                         'phone_number': verification_result.get('authorization', {}).get('mobile_money_number')
@@ -5413,19 +5413,20 @@ def paystack_callback():
             session['email'] = email
             session['index_number'] = index_number
             session['current_flow'] = flow
-            session['transaction_ref'] = mpesa_receipt or payment_ref  # Use M-PESA receipt from SMS
-            session['paystack_ref'] = payment_ref  # Keep Paystack ref as backup
+            session['transaction_ref'] = mpesa_receipt or payment_ref
+            session['paystack_ref'] = payment_ref
             session.permanent = True
             session.modified = True
             
             print(f"🎯 Payment confirmed. User will see receipt: {mpesa_receipt}")
             print(f"🔗 Redirecting to payment-wait for {flow}")
             
-            # Start background processing
+            # Start background processing - FIXED: Don't use session in background thread
             import threading
-            def process_courses_background():
+            def process_courses_background(email, index_number, flow, payment_ref):
                 try:
                     print(f"🔄 Background processing started for {flow}")
+                    # Don't try to access session here
                     payment_full = user_payments_collection.find_one({'transaction_ref': payment_ref})
                     if payment_full and 'grade_data' in payment_full:
                         grade_data = payment_full.get('grade_data', {})
@@ -5458,14 +5459,23 @@ def paystack_callback():
                             qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
                         
                         if qualifying_courses:
+                            # Save to database only - no session access
                             save_user_courses(email, index_number, flow, qualifying_courses)
                             print(f"✅ Background: Generated and saved {len(qualifying_courses)} courses")
                         else:
+                            # Save empty record
                             save_user_courses(email, index_number, flow, [])
+                            print(f"⚠️ Background: No courses found for {flow}")
                 except Exception as e:
                     print(f"❌ Background processing error: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
             
-            thread = threading.Thread(target=process_courses_background)
+            # Start thread with parameters
+            thread = threading.Thread(
+                target=process_courses_background, 
+                args=(email, index_number, flow, payment_ref)
+            )
             thread.daemon = True
             thread.start()
             
@@ -5476,7 +5486,7 @@ def paystack_callback():
         else:
             print(f"❌ No payment record found for reference: {payment_ref}")
             flash("Payment successful but couldn't find your course data. Please use 'Already Made Payment' with your M-PESA receipt.", "warning")
-            return redirect(url_for('verify_payment', _external=True))
+            return redirect(url_for('verify_paystack_payment_page', _external=True))
     else:
         error_msg = verification_result.get('message', 'Payment verification failed')
         print(f"❌ Payment verification failed: {error_msg}")
