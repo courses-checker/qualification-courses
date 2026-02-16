@@ -5257,6 +5257,92 @@ def enter_details(flow):
         traceback.print_exc()
         flash("An error occurred while processing your request. Please try again.", "error")
         return redirect(url_for('enter_details', flow=flow))
+    
+@app.route('/admin/ai-stats')
+def admin_ai_stats():
+    """Admin route to view AI/Chat Assistant statistics"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        # Get AI statistics
+        ai_stats = {
+            'gemini_calls_today': gemini_calls_today,
+            'gemini_daily_limit': MAX_GEMINI_DAILY,
+            'gemini_remaining': MAX_GEMINI_DAILY - gemini_calls_today,
+            'gemini_cache_size': len(gemini_response_cache),
+            'search_cache_size': len(search_cache),
+            'gemini_reset_date': str(gemini_calls_today_reset),
+            'openrouter_enabled': True,
+        }
+        
+        # Get sample cached responses
+        cached_samples = []
+        count = 0
+        for key, response in list(gemini_response_cache.items())[-10:]:
+            if count < 10:
+                timestamp = gemini_cache_timestamps.get(key, datetime.now())
+                cached_samples.append({
+                    'hash': key[:8] + '...',
+                    'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp, datetime) else str(timestamp),
+                    'preview': response[:50] + '...' if len(response) > 50 else response
+                })
+                count += 1
+        
+        return render_template('admin_ai_stats.html', 
+                             ai_stats=ai_stats,
+                             cached_samples=cached_samples)
+    except Exception as e:
+        print(f"❌ Error in admin_ai_stats: {str(e)}")
+        flash(f"Error loading AI stats: {str(e)}", "error")
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/cached-answers')
+def admin_cached_answers():
+    """View all cached AI answers"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        cached_answers = []
+        for key, response in list(gemini_response_cache.items())[-50:]:  # Last 50
+            timestamp = gemini_cache_timestamps.get(key, datetime.now())
+            cached_answers.append({
+                'hash': key,
+                'short_hash': key[:8] + '...',
+                'response': response,
+                'preview': response[:100] + '...' if len(response) > 100 else response,
+                'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp, datetime) else str(timestamp),
+                'length': len(response)
+            })
+        
+        # Sort by timestamp (newest first)
+        cached_answers.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return render_template('admin_cached_answers.html', cached_answers=cached_answers)
+    except Exception as e:
+        print(f"❌ Error in admin_cached_answers: {str(e)}")
+        flash(f"Error loading cached answers: {str(e)}", "error")
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/clear-ai-cache', methods=['POST'])
+def admin_clear_ai_cache():
+    """Clear AI response cache"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        global gemini_response_cache, gemini_cache_timestamps
+        cache_size = len(gemini_response_cache)
+        gemini_response_cache.clear()
+        gemini_cache_timestamps.clear()
+        
+        flash(f"✅ AI cache cleared successfully. Removed {cache_size} entries.", "success")
+        return redirect(url_for('admin_ai_stats'))
+    except Exception as e:
+        print(f"❌ Error clearing AI cache: {str(e)}")
+        flash(f"Error clearing cache: {str(e)}", "error")
+        return redirect(url_for('admin_ai_stats'))
 
 @app.route('/debug/session')
 def debug_session():
