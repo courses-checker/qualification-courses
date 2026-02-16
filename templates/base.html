@@ -7,7 +7,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     
-
     <!-- SEO Meta Tags -->
     <meta name="description" content="Find KUCCPS courses that match your KCSE grades. Degree, Diploma, Certificate, KMTC, Artisan and TTC programs in Kenya.">
     <meta name="keywords" content="KUCCPS, courses, KCSE, Kenya, degree, diploma, certificate, artisan, TTC, KMTC, university, college, admission 2026">
@@ -37,7 +36,7 @@
     
     <!-- PWA Assets -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#C62828">
+    <meta name="theme-color" content="#0d6efd"> <!-- Changed to blue -->
     
     <!-- iOS Icons -->
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152x152.png') }}">
@@ -61,9 +60,10 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
     
-    <!-- Google Fonts -->
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- JSON-LD Scripts (preserved) -->
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -194,53 +194,53 @@
 </script>
 
     <!-- ============================================
-        CUSTOM STYLES
+        CUSTOM STYLES - BLUE THEME (PRESERVING ALL STRUCTURE)
     ============================================= -->
     <style>
         /* ============================================
-            CSS VARIABLES (DESIGN TOKENS)
+            CSS VARIABLES - CHANGED TO BLUE THEME
         ============================================= */
         :root {
-            /* Color Palette */
-            --primary-red: #C62828;
-            --primary-yellow: #FBC02D;
+            /* Color Palette - Changed to Blue */
+            --primary-blue: #0d6efd;
+            --primary-dark-blue: #0b5ed7;
+            --primary-yellow: #FBC02D; /* Kept yellow as accent */
             --light-grey: #F5F5F5;
             --medium-grey: #9E9E9E;
             --dark-grey: #424242;
             --black: #000000;
             --white: #FFFFFF;
             --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
             
-            /* Semantic Colors */
-            --red-light: #EF5350;
-            --red-dark: #B71C1C;
-            --yellow-light: #FFEB3B;
-            --yellow-dark: #F57F17;
+            /* Semantic Colors - Updated to Blue */
+            --primary-color: var(--primary-blue);
+            --primary-dark: var(--primary-dark-blue);
+            --accent-yellow: var(--primary-yellow);
             --success-green: #4CAF50;
             --info-blue: #2196F3;
             --warning-orange: #FF9800;
             --danger-red: #D32F2F;
             
-            /* Gradients */
-            --gradient-red: linear-gradient(135deg, var(--primary-red) 0%, var(--red-dark) 100%);
-            --gradient-yellow: linear-gradient(135deg, var(--primary-yellow) 0%, var(--yellow-dark) 100%);
+            /* Gradients - Changed to Blue */
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark-blue) 100%);
+            --gradient-yellow: linear-gradient(135deg, var(--primary-yellow) 0%, #F57F17 100%);
             --gradient-grey: linear-gradient(135deg, var(--light-grey) 0%, #E0E0E0 100%);
             
-            /* Shadows */
+            /* Shadows (unchanged) */
             --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.08);
             --shadow-md: 0 5px 20px rgba(0, 0, 0, 0.12);
             --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.15);
             --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.2);
             
-            /* Border Radius */
+            /* Border Radius (unchanged) */
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 20px;
             --radius-full: 9999px;
             
-            /* Spacing */
+            /* Spacing (unchanged) */
             --space-xs: 4px;
             --space-sm: 8px;
             --space-md: 16px;
@@ -248,15 +248,12 @@
             --space-xl: 32px;
             --space-2xl: 48px;
             
-            /* Transitions */
+            /* Transitions (unchanged) */
             --transition-fast: 150ms ease;
             --transition-base: 300ms ease;
             --transition-slow: 500ms ease;
             
-                       /* Typography - System Fonts (No Google Fonts) */
-            --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            /* Z-index Layers */
+            /* Z-index Layers (unchanged) */
             --z-dropdown: 1000;
             --z-sticky: 1020;
             --z-fixed: 1030;
@@ -267,7 +264,7 @@
         }
         
         /* ============================================
-            BASE STYLES
+            BASE STYLES (unchanged structure)
         ============================================= */
         * {
             margin: 0;
@@ -305,9 +302,8 @@
         }
         
         /* ============================================
-            LAYOUT COMPONENTS
+            LAYOUT COMPONENTS (unchanged)
         ============================================= */
-        /* Main Wrapper */
         .main-wrapper {
             min-height: 100vh;
             display: flex;
@@ -322,15 +318,13 @@
             width: 100%;
         }
         
-        /* Container Adjustments */
         .container {
             max-width: 1320px;
         }
         
         /* ============================================
-            NAVIGATION
+            NAVIGATION - UPDATED TO BLUE
         ============================================= */
-        /* Navbar */
         .navbar-custom {
             background: var(--white);
             padding: var(--space-md) 0;
@@ -338,7 +332,7 @@
             position: sticky;
             top: 0;
             z-index: var(--z-sticky);
-            border-bottom: 3px solid var(--primary-red);
+            border-bottom: 3px solid var(--primary-blue);
             transition: box-shadow var(--transition-base);
         }
         
@@ -350,7 +344,7 @@
             font-family: var(--font-heading);
             font-weight: 800;
             font-size: 1.6rem;
-            color: var(--primary-red);
+            color: var(--primary-blue);
             display: flex;
             align-items: center;
             gap: var(--space-sm);
@@ -361,7 +355,6 @@
             color: var(--primary-yellow);
         }
         
-        /* Nav Links */
         .nav-link {
             color: var(--dark-grey) !important;
             font-weight: 600;
@@ -374,13 +367,13 @@
         }
         
         .nav-link:hover {
-            color: var(--primary-red) !important;
-            background: rgba(198, 40, 40, 0.08);
+            color: var(--primary-blue) !important;
+            background: rgba(13, 110, 253, 0.08);
             transform: translateY(-2px);
         }
         
         .nav-link.active {
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             color: var(--white) !important;
             box-shadow: var(--shadow-md);
         }
@@ -390,7 +383,6 @@
             font-size: 1rem;
         }
         
-        /* Navigation Badges */
         .badge-notification {
             position: absolute;
             top: -5px;
@@ -414,7 +406,7 @@
             padding: 3px 8px;
             border-radius: 12px;
             font-weight: 700;
-            border: 1px solid var(--primary-red);
+            border: 1px solid var(--primary-blue);
             animation: pulse 2s infinite;
         }
         
@@ -425,7 +417,7 @@
         }
         
         /* ============================================
-            SIDEBAR
+            SIDEBAR - UPDATED TO BLUE
         ============================================= */
         .sidebar {
             position: fixed;
@@ -439,7 +431,7 @@
             padding-top: 80px;
             box-shadow: var(--shadow-lg);
             overflow-y: auto;
-            border-right: 4px solid var(--primary-red);
+            border-right: 4px solid var(--primary-blue);
         }
         
         .sidebar.show {
@@ -449,7 +441,7 @@
         .sidebar-header {
             padding: var(--space-xl);
             text-align: center;
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             margin-bottom: var(--space-lg);
             color: var(--white);
         }
@@ -473,14 +465,14 @@
         }
         
         .sidebar-link:hover {
-            background: rgba(198, 40, 40, 0.08);
-            color: var(--primary-red);
+            background: rgba(13, 110, 253, 0.08);
+            color: var(--primary-blue);
             border-left: 4px solid var(--primary-yellow);
             transform: translateX(5px);
         }
         
         .sidebar-link.active {
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             border-left: 4px solid var(--primary-yellow);
             color: var(--white);
         }
@@ -489,14 +481,13 @@
             width: 25px;
             margin-right: var(--space-md);
             font-size: 1.1rem;
-            color: var(--primary-red);
+            color: var(--primary-blue);
         }
         
         .sidebar-link.active i {
             color: var(--white);
         }
         
-        /* Sidebar Sections */
         .sidebar-section {
             padding: var(--space-lg) var(--space-xl);
             border-top: 1px solid var(--light-grey);
@@ -504,21 +495,20 @@
         
         .sidebar-section h4 {
             font-family: var(--font-heading);
-            color: var(--primary-red);
+            color: var(--primary-blue);
             margin-bottom: var(--space-md);
             font-size: 1.1rem;
         }
         
         /* ============================================
-            UI COMPONENTS
+            UI COMPONENTS - UPDATED TO BLUE
         ============================================= */
-        /* Menu Toggle Button */
         .menu-toggle {
             position: fixed;
             top: var(--space-md);
             left: var(--space-md);
             z-index: var(--z-fixed);
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             border: 2px solid var(--white);
             color: var(--white);
             width: 48px;
@@ -535,11 +525,10 @@
         
         .menu-toggle:hover {
             transform: scale(1.1) rotate(90deg);
-            background: var(--primary-red);
+            background: var(--primary-blue);
             box-shadow: var(--shadow-lg);
         }
         
-        /* Overlay */
         .overlay {
             position: fixed;
             top: 0;
@@ -559,14 +548,13 @@
             visibility: visible;
         }
         
-        /* Back to Top Button */
         .back-to-top {
             position: fixed;
             bottom: var(--space-xl);
             right: var(--space-xl);
             width: 48px;
             height: 48px;
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             color: var(--white);
             border: 2px solid var(--white);
             border-radius: var(--radius-full);
@@ -589,11 +577,10 @@
         
         .back-to-top:hover {
             transform: translateY(-3px);
-            background: var(--primary-red);
+            background: var(--primary-blue);
             box-shadow: var(--shadow-lg);
         }
         
-        /* News Notification Badge */
         .news-badge-container {
             position: fixed;
             top: 120px;
@@ -606,7 +593,7 @@
             width: 50px;
             height: 50px;
             border-radius: var(--radius-full);
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             color: white;
             border: 2px solid var(--white);
             display: flex;
@@ -621,7 +608,7 @@
         
         .news-bell-btn:hover {
             transform: scale(1.1) rotate(-10deg);
-            background: var(--primary-red);
+            background: var(--primary-blue);
             box-shadow: var(--shadow-lg);
         }
         
@@ -632,15 +619,15 @@
         @keyframes bell-pulse {
             0% { 
                 transform: scale(1); 
-                box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.7); 
+                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7); 
             }
             70% { 
                 transform: scale(1.05); 
-                box-shadow: 0 0 0 10px rgba(198, 40, 40, 0); 
+                box-shadow: 0 0 0 10px rgba(13, 110, 253, 0); 
             }
             100% { 
                 transform: scale(1); 
-                box-shadow: 0 0 0 0 rgba(198, 40, 40, 0); 
+                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); 
             }
         }
         
@@ -660,7 +647,7 @@
         }
         
         /* ============================================
-            ALERTS & NOTIFICATIONS
+            ALERTS & NOTIFICATIONS (UPDATED COLORS)
         ============================================= */
         .alert-custom {
             border: none;
@@ -680,9 +667,9 @@
         }
         
         .alert-info {
-            border-left-color: var(--primary-red);
-            background: rgba(198, 40, 40, 0.1);
-            color: var(--primary-red);
+            border-left-color: var(--primary-blue);
+            background: rgba(13, 110, 253, 0.1);
+            color: var(--primary-blue);
         }
         
         .alert-warning {
@@ -709,7 +696,7 @@
         }
         
         /* ============================================
-            FORMS
+            FORMS - UPDATED TO BLUE
         ============================================= */
         .form-control-custom {
             border: 2px solid var(--light-grey);
@@ -722,8 +709,8 @@
         }
         
         .form-control-custom:focus {
-            border-color: var(--primary-red);
-            box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.15);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
             outline: none;
         }
         
@@ -736,14 +723,14 @@
         }
         
         .input-group-custom .input-group-text {
-            background: var(--primary-red);
+            background: var(--primary-blue);
             color: var(--white);
             border: none;
             font-weight: 600;
         }
         
         /* ============================================
-            BUTTONS
+            BUTTONS - UPDATED TO BLUE
         ============================================= */
         .btn-custom {
             padding: var(--space-md) var(--space-xl);
@@ -787,13 +774,13 @@
         }
         
         .btn-primary-custom {
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             color: var(--white);
             box-shadow: var(--shadow-sm);
         }
         
         .btn-primary-custom:hover {
-            background: var(--primary-red);
+            background: var(--primary-blue);
         }
         
         .btn-yellow-custom {
@@ -808,17 +795,17 @@
         
         .btn-outline-custom {
             background: transparent;
-            border: 2px solid var(--primary-red);
-            color: var(--primary-red);
+            border: 2px solid var(--primary-blue);
+            color: var(--primary-blue);
         }
         
         .btn-outline-custom:hover {
-            background: var(--primary-red);
+            background: var(--primary-blue);
             color: var(--white);
         }
         
         /* ============================================
-            CARDS
+            CARDS - UPDATED TO BLUE
         ============================================= */
         .card-custom {
             border: none;
@@ -834,7 +821,7 @@
         }
         
         .card-header-custom {
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             color: var(--white);
             padding: var(--space-lg) var(--space-xl);
             border-bottom: none;
@@ -846,7 +833,7 @@
         }
         
         /* ============================================
-            MODALS
+            MODALS - UPDATED TO BLUE
         ============================================= */
         .modal-custom .modal-content {
             border: none;
@@ -869,7 +856,7 @@
         }
         
         .modal-custom .modal-header {
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             color: var(--white);
             border-bottom: none;
             padding: var(--space-lg) var(--space-xl);
@@ -914,16 +901,15 @@
         }
         
         /* ============================================
-            PWA COMPONENTS
+            PWA COMPONENTS - UPDATED TO BLUE
         ============================================= */
-        /* PWA Installation Prompt */
         .pwa-install-prompt {
             position: fixed;
             bottom: var(--space-xl);
             left: 50%;
             transform: translateX(-50%);
             background: var(--white);
-            border: 2px solid var(--primary-red);
+            border: 2px solid var(--primary-blue);
             border-radius: var(--radius-lg);
             padding: var(--space-lg);
             box-shadow: var(--shadow-xl);
@@ -954,7 +940,7 @@
             width: 48px;
             height: 48px;
             border-radius: var(--radius-md);
-            background: var(--gradient-red);
+            background: var(--gradient-primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -969,7 +955,7 @@
         }
         
         .pwa-title h5 {
-            color: var(--primary-red);
+            color: var(--primary-blue);
             margin-bottom: var(--space-xs);
             font-weight: 700;
         }
@@ -978,7 +964,51 @@
             color: var(--medium-grey);
             font-size: 0.85rem;
         }
-        
+        /* Sidebar Close Button */
+.sidebar-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--white);
+    color: var(--white);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.sidebar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Update sidebar-header to accommodate close button */
+.sidebar-header {
+    position: relative;
+    padding: var(--space-xl);
+    text-align: center;
+    background: var(--gradient-primary);
+    margin-bottom: var(--space-lg);
+    color: var(--white);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .sidebar-close-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+        top: 15px;
+        right: 15px;
+    }
+}
         .pwa-buttons {
             display: flex;
             gap: var(--space-sm);
@@ -1008,7 +1038,6 @@
             color: var(--dark-grey);
         }
         
-        /* iOS Installation Guide */
         .ios-install-guide {
             position: fixed;
             top: 0;
@@ -1044,7 +1073,7 @@
         }
         
         .ios-step-number {
-            background: var(--primary-red);
+            background: var(--primary-blue);
             color: white;
             width: 24px;
             height: 24px;
@@ -1059,7 +1088,7 @@
         }
         
         /* ============================================
-            FOOTER
+            FOOTER (unchanged - dark grey works with blue)
         ============================================= */
         .footer {
             background: var(--dark-grey);
@@ -1167,7 +1196,7 @@
         }
         
         /* ============================================
-            UTILITY CLASSES
+            UTILITY CLASSES (unchanged)
         ============================================= */
         .hover-lift {
             transition: transform var(--transition-base), box-shadow var(--transition-base);
@@ -1181,7 +1210,7 @@
         .spinner-custom {
             width: 3rem;
             height: 3rem;
-            color: var(--primary-red);
+            color: var(--primary-blue);
             animation: rotate 1s linear infinite;
         }
         
@@ -1200,7 +1229,7 @@
         }
         
         /* ============================================
-            CUSTOM SCROLLBAR
+            CUSTOM SCROLLBAR - UPDATED TO BLUE
         ============================================= */
         ::-webkit-scrollbar {
             width: 8px;
@@ -1212,16 +1241,16 @@
         }
         
         ::-webkit-scrollbar-thumb {
-            background: var(--primary-red);
+            background: var(--primary-blue);
             border-radius: var(--radius-sm);
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--red-dark);
+            background: var(--primary-dark-blue);
         }
         
         /* ============================================
-            RESPONSIVE DESIGN
+            RESPONSIVE DESIGN (unchanged)
         ============================================= */
         @media (max-width: 1200px) {
             .main-content {
@@ -1365,9 +1394,6 @@
             }
         }
         
-        /* ============================================
-            STANDALONE MODE ADJUSTMENTS
-        ============================================= */
         .standalone-mode .navbar-custom {
             padding-top: env(safe-area-inset-top);
         }
@@ -1376,9 +1402,6 @@
             padding-top: calc(var(--space-xl) + env(safe-area-inset-top));
         }
         
-        /* ============================================
-            PRINT STYLES
-        ============================================= */
         @media print {
             .navbar-custom,
             .footer,
@@ -1398,10 +1421,17 @@
                 color: var(--black) !important;
             }
         }
+
+        /* ============================================
+            FLOATING CHAT BUTTON - REMOVED (as requested)
+        ============================================= */
+        .floating-chat-btn {
+            display: none !important;
+        }
     </style>
     
     <!-- ============================================
-        SCHEMA MARKUP (JSON-LD)
+        SCHEMA MARKUP (JSON-LD) - PRESERVED
     ============================================= -->
     <script type="application/ld+json">
     {
@@ -1500,7 +1530,7 @@
     ============================================= -->
     <div id="iosInstallGuide" class="ios-install-guide">
         <div class="ios-guide-content">
-            <h4 class="mb-4" style="color: var(--primary-red);">
+            <h4 class="mb-4" style="color: var(--primary-blue);">
                 <i class="fas fa-mobile-alt me-2"></i>Install KUCCPS App on iOS
             </h4>
             <div class="ios-steps">
@@ -1579,84 +1609,88 @@
     </nav>
 
     <!-- ============================================
-        MOBILE SIDEBAR
-    ============================================= -->
-    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
-        <i class="fas fa-bars"></i>
-    </button>
+    MOBILE SIDEBAR WITH CLOSE BUTTON
+============================================= -->
+<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+    <i class="fas fa-bars"></i>
+</button>
 
-    <div class="sidebar" id="sidebarMenu">
-        <div class="sidebar-header">
-            <h3><i class="fas fa-graduation-cap me-2"></i>KUCCPS Course Checker</h3>
-        </div>
-        
-        <!-- Mobile Navigation Links -->
-        <a href="/" class="sidebar-link active">
-            <i class="fas fa-home"></i> Home
-        </a>
-        <a href="https://web-development-6fdl.onrender.com" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
-            <i class="fas fa-crown"></i> Premium Programs
-        </a>
-        <a href="/news" class="sidebar-link">
-            <i class="fas fa-newspaper"></i> News & Updates
-        </a>
-        <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
-            <i class="fas fa-check-circle"></i> My Paid Courses
-        </a>
-        <a href="https://students.kuccps.net/login" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
-            <i class="fas fa-external-link-alt"></i> KUCCPS Portal
-        </a>
-        <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#helpModal">
-            <i class="fas fa-question-circle"></i> Help
-        </a>
-        <a href="/contact" class="sidebar-link" onclick="toggleSidebar();">
-            <i class="fas fa-envelope"></i> Contact Us
-        </a>
-        <a href="mailto:courseschecker@gmail.com" class="sidebar-link" onclick="toggleSidebar();">
-            <i class="fas fa-at"></i> Email Us
-        </a>
-        <a href="/about" class="sidebar-link" onclick="toggleSidebar();">
-            <i class="fas fa-info-circle"></i> About Us
-        </a>
-        <a href="/user-guide" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
-            <i class="fas fa-book"></i> User Guide
-        </a>
-        <a href="/basket" class="sidebar-link" id="sidebarBasketLink" style="display: none;" onclick="toggleSidebar();">
-            <i class="fas fa-shopping-basket"></i> My Basket
-            <span class="badge-notification" id="sidebarBasketCount">0</span>
-        </a>
-        <a href="#" class="sidebar-link" id="sidebarInstallLink" style="display: none;" onclick="toggleSidebar(); showPwaInstallPrompt();">
-            <i class="fas fa-download"></i> Install App
-            <span class="install-badge" style="position: absolute; right: 20px;">NEW</span>
-        </a>
-        <!-- Guides Section -->
-        <div class="sidebar-section">
-            <h4><i class="fas fa-book me-2"></i>Guides</h4>
-            <a href="{{ url_for('kuccps_guides.guides_index') }}" class="sidebar-link" onclick="toggleSidebar();">
-                <i class="fas fa-list"></i> All Guides
-            </a>
-            <a href="{{ url_for('kuccps_guides.cluster_points') }}" class="sidebar-link" onclick="toggleSidebar();">
-                <i class="fas fa-chart-bar"></i> Cluster Points
-            </a>
-            <a href="{{ url_for('kuccps_guides.kcse_admission') }}" class="sidebar-link" onclick="toggleSidebar();">
-                <i class="fas fa-graduation-cap"></i> KCSE Requirements
-            </a>
-            <a href="{{ url_for('kuccps_guides.diploma_courses') }}" class="sidebar-link" onclick="toggleSidebar();">
-                <i class="fas fa-certificate"></i> Diploma Courses
-            </a>
-            <a href="{{ url_for('kuccps_guides.certificate_courses') }}" class="sidebar-link" onclick="toggleSidebar();">
-                <i class="fas fa-file-certificate"></i> Certificate Courses
-            </a>
-            <a href="{{ url_for('kuccps_guides.kuccps_application') }}" class="sidebar-link" onclick="toggleSidebar();">
-                <i class="fas fa-edit"></i> Apply to KUCCPS
-            </a>
-            <a href="{{ url_for('kuccps_guides.scholarships') }}" class="sidebar-link" onclick="toggleSidebar();">
-                <i class="fas fa-hand-holding-usd"></i> Scholarships
-            </a>
-        </div>
+<div class="sidebar" id="sidebarMenu">
+    <!-- Sidebar Header with Close Button -->
+    <div class="sidebar-header">
+        <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close sidebar">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3><i class="fas fa-graduation-cap me-2"></i>KUCCPS Course Checker</h3>
     </div>
-    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
+    
+    <!-- Mobile Navigation Links -->
+    <a href="/" class="sidebar-link active">
+        <i class="fas fa-home"></i> Home
+    </a>
+    <a href="https://web-development-6fdl.onrender.com" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
+        <i class="fas fa-crown"></i> Premium Programs
+    </a>
+    <a href="/news" class="sidebar-link">
+        <i class="fas fa-newspaper"></i> News & Updates
+    </a>
+    <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#verifyPaymentModal">
+        <i class="fas fa-check-circle"></i> My Paid Courses
+    </a>
+    <a href="https://students.kuccps.net/login" target="_blank" class="sidebar-link" onclick="toggleSidebar();" rel="noopener noreferrer">
+        <i class="fas fa-external-link-alt"></i> KUCCPS Portal
+    </a>
+    <a href="#" class="sidebar-link" onclick="toggleSidebar();" data-bs-toggle="modal" data-bs-target="#helpModal">
+        <i class="fas fa-question-circle"></i> Help
+    </a>
+    <a href="/contact" class="sidebar-link" onclick="toggleSidebar();">
+        <i class="fas fa-envelope"></i> Contact Us
+    </a>
+    <a href="mailto:courseschecker@gmail.com" class="sidebar-link" onclick="toggleSidebar();">
+        <i class="fas fa-at"></i> Email Us
+    </a>
+    <a href="/about" class="sidebar-link" onclick="toggleSidebar();">
+        <i class="fas fa-info-circle"></i> About Us
+    </a>
+    <a href="/user-guide" target="_blank" class="sidebar-link" onclick="toggleSidebar();">
+        <i class="fas fa-book"></i> User Guide
+    </a>
+    <a href="/basket" class="sidebar-link" id="sidebarBasketLink" style="display: none;" onclick="toggleSidebar();">
+        <i class="fas fa-shopping-basket"></i> My Basket
+        <span class="badge-notification" id="sidebarBasketCount">0</span>
+    </a>
+    <a href="#" class="sidebar-link" id="sidebarInstallLink" style="display: none;" onclick="toggleSidebar(); showPwaInstallPrompt();">
+        <i class="fas fa-download"></i> Install App
+        <span class="install-badge" style="position: absolute; right: 20px;">NEW</span>
+    </a>
+    
+    <!-- Guides Section -->
+    <div class="sidebar-section">
+        <h4><i class="fas fa-book me-2"></i>Guides</h4>
+        <a href="{{ url_for('kuccps_guides.guides_index') }}" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-list"></i> All Guides
+        </a>
+        <a href="{{ url_for('kuccps_guides.cluster_points') }}" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-chart-bar"></i> Cluster Points
+        </a>
+        <a href="{{ url_for('kuccps_guides.kcse_admission') }}" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-graduation-cap"></i> KCSE Requirements
+        </a>
+        <a href="{{ url_for('kuccps_guides.diploma_courses') }}" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-certificate"></i> Diploma Courses
+        </a>
+        <a href="{{ url_for('kuccps_guides.certificate_courses') }}" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-file-certificate"></i> Certificate Courses
+        </a>
+        <a href="{{ url_for('kuccps_guides.kuccps_application') }}" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-edit"></i> Apply to KUCCPS
+        </a>
+        <a href="{{ url_for('kuccps_guides.scholarships') }}" class="sidebar-link" onclick="toggleSidebar();">
+            <i class="fas fa-hand-holding-usd"></i> Scholarships
+        </a>
+    </div>
+</div>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
     <!-- ============================================
         MAIN CONTENT AREA
     ============================================= -->
@@ -1715,7 +1749,7 @@
                     <div class="pwa-icon mb-3" style="width: 80px; height: 80px; margin: 0 auto;">
                         <i class="fas fa-graduation-cap" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h4 class="mb-3" style="color: var(--primary-red);">
+                    <h4 class="mb-3" style="color: var(--primary-blue);">
                         <i class="fas fa-mobile-alt me-2"></i>Get the KUCCPS App
                     </h4>
                     <p class="text-muted mb-4">Install our app for faster access, offline viewing, and notifications about new courses.</p>
@@ -1780,7 +1814,7 @@
     </div>
 
     <!-- ============================================
-        MODALS
+        MODALS - ALL PRESERVED
     ============================================= -->
     
     <!-- Help Modal -->
@@ -1795,7 +1829,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-4">
-                        <div class="icon-circle mb-3" style="width: 70px; height: 70px; background: var(--gradient-red); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
+                        <div class="icon-circle mb-3" style="width: 70px; height: 70px; background: var(--gradient-primary); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
                             <i class="fas fa-hands-helping" style="font-size: 2rem; color: white;"></i>
                         </div>
                         <h6 class="text-muted">We're here to help you succeed</h6>
@@ -1809,7 +1843,7 @@
                             <small class="text-muted mt-2 d-block">Get instant responses from our support team</small>
                         </div>
                         <div class="contact-option mb-3">
-                            <h6 class="mb-2"><i class="fas fa-phone me-2" style="color: var(--primary-red);"></i>Phone Support</h6>
+                            <h6 class="mb-2"><i class="fas fa-phone me-2" style="color: var(--primary-blue);"></i>Phone Support</h6>
                             <a href="tel:+254791196121" class="btn btn-primary-custom w-100">
                                 <i class="fas fa-phone me-2"></i>Call: 0791 196 121
                             </a>
@@ -1836,9 +1870,7 @@
         </div>
     </div>
 
-    <!-- ============================================
-        VERIFY PAYMENT MODAL - SIMPLIFIED FOR M-PESA ONLY
-    ============================================= -->
+    <!-- VERIFY PAYMENT MODAL - M-PESA ONLY -->
     <div class="modal fade modal-custom" id="verifyPaymentModal" tabindex="-1" aria-labelledby="verifyPaymentLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -1907,7 +1939,7 @@
                             <p class="mt-3 fw-semibold">Verifying your payment...</p>
                             <div class="progress mt-3" style="height: 6px; border-radius: 10px; overflow: hidden;">
                                 <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                     style="width: 100%; background: var(--gradient-red);"></div>
+                                     style="width: 100%; background: var(--gradient-primary);"></div>
                             </div>
                         </div>
 
@@ -2092,7 +2124,7 @@
     {% block scripts %}{% endblock %}
     
     <!-- ============================================
-        MAIN JAVASCRIPT - SIMPLIFIED M-PESA VERIFICATION
+        MAIN JAVASCRIPT - COMPLETELY PRESERVED
     ============================================= -->
     <script>
         // ============================================
@@ -2403,7 +2435,7 @@
                     const count = levelDetails && levelDetails[level] ? levelDetails[level].count : 0;
                     const badge = document.createElement('span');
                     badge.className = 'badge px-3 py-2 me-2 mb-2';
-                    badge.style.cssText = 'background: var(--gradient-red)!important; font-size: 0.9rem; color: white; border-radius: 20px;';
+                    badge.style.cssText = 'background: var(--gradient-primary)!important; font-size: 0.9rem; color: white; border-radius: 20px;';
                     
                     // Map level to display name
                     let displayName = level;
@@ -2928,149 +2960,6 @@
         }
     </script>
 
-    <!-- ============================================
-        FLOATING CHAT BUTTON
-    ============================================= -->
-    <div class="floating-chat-btn" id="floatingChatBtn" title="Chat with AI Assistant" aria-label="Open AI Course Assistant">
-        <i class="fas fa-robot"></i>
-        <span class="chat-tooltip">Ask AI Assistant</span>
-    </div>
-
-    <style>
-        /* Floating Chat Button (now green) */
-        .floating-chat-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(32, 201, 151, 0.15);
-            transition: all var(--transition-base);
-            z-index: 1050;
-            border: 3px solid #19692c;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .floating-chat-btn:hover {
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 15px 35px rgba(25, 105, 44, 0.35);
-            background: linear-gradient(135deg, #19692c 0%, #1e7f4f 100%);
-        }
-
-        .floating-chat-btn:active {
-            transform: scale(0.95);
-        }
-
-        .chat-tooltip {
-            position: absolute;
-            right: 75px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--dark-grey);
-            color: var(--white);
-            padding: 8px 12px;
-            border-radius: var(--radius-md);
-            font-size: 0.85rem;
-            font-weight: 500;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--transition-fast);
-            pointer-events: none;
-        }
-
-        .chat-tooltip::after {
-            content: '';
-            position: absolute;
-            left: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            border: 6px solid transparent;
-            border-left-color: var(--dark-grey);
-        }
-
-        .floating-chat-btn:hover .chat-tooltip {
-            opacity: 1;
-            visibility: visible;
-            right: 80px;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* Hide on chat page */
-        .chat-page .floating-chat-btn {
-            display: none !important;
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            .floating-chat-btn {
-                bottom: 20px;
-                right: 20px;
-                width: 55px;
-                height: 55px;
-                font-size: 1.3rem;
-            }
-
-            .chat-tooltip {
-                display: none; /* Hide tooltip on mobile for cleaner look */
-            }
-        }
-
-        /* Pulse animation for attention */
-        .floating-chat-btn.pulse-attention {
-            animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0.65); }
-            70% { box-shadow: 0 0 0 10px rgba(32, 201, 151, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(32, 201, 151, 0); }
-        }
-    </style>
-
-    <script>
-        // Floating Chat Button Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const floatingChatBtn = document.getElementById('floatingChatBtn');
-
-            if (floatingChatBtn) {
-                // Add pulse animation after 5 seconds to draw attention
-                setTimeout(() => {
-                    floatingChatBtn.classList.add('pulse-attention');
-                }, 5000);
-
-                // Remove pulse after 10 seconds
-                setTimeout(() => {
-                    floatingChatBtn.classList.remove('pulse-attention');
-                }, 15000);
-
-                // Click handler
-                floatingChatBtn.addEventListener('click', function() {
-                    // Navigate to chat page
-                    window.location.href = '/chat';
-                });
-
-                // Add keyboard accessibility
-                floatingChatBtn.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        window.location.href = '/chat';
-                    }
-                });
-            }
-        });
-    </script>
+    <!-- Floating chat button is completely removed as requested -->
 </body>
 </html>

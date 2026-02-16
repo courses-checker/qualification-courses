@@ -63,9 +63,14 @@
 </script>
 
 <style>
-    /* Custom Styles for Home Page - KUCCPS Colors */
+    /* ============================================
+        CUSTOM STYLES FOR HOME PAGE - BLUE THEME
+        (Preserving all functionality, only colors changed)
+    ============================================= */
+    
+    /* Hero Section - Updated to Blue */
     .hero-section {
-        background: var(--gradient-red);
+        background: var(--gradient-primary); /* Changed from gradient-red */
         color: var(--white);
         padding: 80px 0 60px;
         position: relative;
@@ -92,25 +97,26 @@
     }
     
     .hero-btn {
-        background: var(--gradient-yellow);
+        background: var(--gradient-yellow); /* Kept yellow accent */
         color: var(--black);
         font-weight: 700;
         padding: 14px 35px;
-        border-radius: var(--border-radius-md);
+        border-radius: var(--radius-md);
         border: none;
         font-size: 1.1rem;
         transition: all 0.3s ease;
-        box-shadow: var(--shadow-medium);
+        box-shadow: var(--shadow-md);
         position: relative;
         overflow: hidden;
     }
     
     .hero-btn:hover {
         transform: translateY(-3px);
-        box-shadow: var(--shadow-heavy);
+        box-shadow: var(--shadow-lg);
         color: var(--black);
     }
     
+    /* Stats Section */
     .stats-section {
         background: var(--white);
         padding: 60px 0;
@@ -119,18 +125,18 @@
     
     .stat-card {
         background: var(--white);
-        border-radius: var(--border-radius-md);
+        border-radius: var(--radius-md);
         padding: 30px 20px;
         text-align: center;
-        box-shadow: var(--shadow-light);
+        box-shadow: var(--shadow-sm);
         transition: all 0.3s ease;
         height: 100%;
-        border-top: 4px solid var(--primary-red);
+        border-top: 4px solid var(--primary-blue); /* Changed from primary-red */
     }
     
     .stat-card:hover {
         transform: translateY(-8px);
-        box-shadow: var(--shadow-medium);
+        box-shadow: var(--shadow-md);
         border-top-color: var(--primary-yellow);
     }
     
@@ -138,7 +144,7 @@
         font-size: 2.2rem;
         font-weight: 800;
         margin-bottom: 8px;
-        color: var(--primary-red);
+        color: var(--primary-blue); /* Changed from primary-red */
         line-height: 1;
     }
     
@@ -150,6 +156,7 @@
         letter-spacing: 0.5px;
     }
     
+    /* Process Section */
     .process-section {
         padding: 80px 0;
         background: var(--light-grey);
@@ -175,7 +182,7 @@
         transform: translateX(-50%);
         width: 80px;
         height: 4px;
-        background: var(--primary-yellow);
+        background: var(--primary-yellow); /* Kept yellow */
         border-radius: 2px;
     }
     
@@ -185,8 +192,8 @@
         position: relative;
         z-index: 1;
         background: var(--white);
-        border-radius: var(--border-radius-md);
-        box-shadow: var(--shadow-light);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
         transition: all 0.3s ease;
         height: 100%;
         border: 2px solid transparent;
@@ -194,14 +201,14 @@
     
     .process-card:hover {
         transform: translateY(-5px);
-        box-shadow: var(--shadow-medium);
-        border-color: var(--primary-red);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-blue); /* Changed from primary-red */
     }
     
     .process-number {
         width: 60px;
         height: 60px;
-        background: var(--gradient-red);
+        background: var(--gradient-primary); /* Changed from gradient-red */
         color: var(--white);
         border-radius: 50%;
         display: flex;
@@ -210,7 +217,7 @@
         font-size: 1.5rem;
         font-weight: 800;
         margin: 0 auto 20px;
-        box-shadow: 0 5px 15px rgba(198, 40, 40, 0.3);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3); /* Updated shadow color */
     }
     
     .process-title {
@@ -227,6 +234,7 @@
         font-size: 1rem;
     }
     
+    /* Categories Section */
     .categories-section {
         padding: 80px 0;
         background: var(--white);
@@ -235,11 +243,11 @@
     
     .category-card {
         background: var(--white);
-        border-radius: var(--border-radius-md);
+        border-radius: var(--radius-md);
         padding: 35px 25px;
         text-align: center;
         margin-bottom: 25px;
-        box-shadow: var(--shadow-light);
+        box-shadow: var(--shadow-sm);
         transition: all 0.3s ease;
         border-top: 5px solid;
         height: 100%;
@@ -249,7 +257,7 @@
     
     .category-card:hover {
         transform: translateY(-8px);
-        box-shadow: var(--shadow-medium);
+        box-shadow: var(--shadow-md);
     }
     
     /* Degree Card Specific Styles - Coming Soon */
@@ -262,7 +270,7 @@
         position: absolute;
         top: 15px;
         right: -35px;
-        background: var(--primary-red);
+        background: var(--primary-blue); /* Changed from primary-red */
         color: var(--white);
         padding: 8px 40px;
         font-size: 0.8rem;
@@ -270,17 +278,18 @@
         text-transform: uppercase;
         letter-spacing: 1px;
         transform: rotate(45deg);
-        box-shadow: var(--shadow-medium);
+        box-shadow: var(--shadow-md);
         z-index: 2;
     }
     
-    /* Different border colors for each category */
-    .category-card:nth-child(1) { border-top-color: var(--primary-red); }
+    /* Different border colors for each category - updated to blue variations */
+    .category-card:nth-child(1) { border-top-color: var(--primary-blue); }
     .category-card:nth-child(2) { border-top-color: var(--primary-yellow); }
-    .category-card:nth-child(3) { border-top-color: var(--medium-grey); }
-    .category-card:nth-child(4) { border-top-color: var(--dark-grey); }
-    .category-card:nth-child(5) { border-top-color: var(--primary-red); }
+    .category-card:nth-child(3) { border-top-color: var(--info-blue); }
+    .category-card:nth-child(4) { border-top-color: var(--primary-dark-blue); }
+    .category-card:nth-child(5) { border-top-color: var(--primary-blue); }
     .category-card:nth-child(6) { border-top-color: var(--primary-yellow); }
+    .category-card:nth-child(7) { border-top-color: var(--info-blue); }
     
     .category-icon {
         font-size: 3rem;
@@ -290,15 +299,16 @@
     }
     
     .category-icon i {
-        color: var(--primary-red);
+        color: var(--primary-blue); /* Changed from primary-red */
     }
     
-    .category-card:nth-child(1) .category-icon i { color: var(--primary-red); }
+    .category-card:nth-child(1) .category-icon i { color: var(--primary-blue); }
     .category-card:nth-child(2) .category-icon i { color: var(--primary-yellow); }
-    .category-card:nth-child(3) .category-icon i { color: var(--medium-grey); }
-    .category-card:nth-child(4) .category-icon i { color: var(--dark-grey); }
-    .category-card:nth-child(5) .category-icon i { color: var(--primary-red); }
+    .category-card:nth-child(3) .category-icon i { color: var(--info-blue); }
+    .category-card:nth-child(4) .category-icon i { color: var(--primary-dark-blue); }
+    .category-card:nth-child(5) .category-icon i { color: var(--primary-blue); }
     .category-card:nth-child(6) .category-icon i { color: var(--primary-yellow); }
+    .category-card:nth-child(7) .category-icon i { color: var(--info-blue); }
     
     .category-title {
         font-size: 1.4rem;
@@ -317,24 +327,24 @@
     }
     
     .category-btn {
-        background: var(--gradient-red);
+        background: var(--gradient-primary); /* Changed from gradient-red */
         color: var(--white);
         border: none;
         padding: 10px 25px;
-        border-radius: var(--border-radius-md);
+        border-radius: var(--radius-md);
         font-weight: 700;
         font-size: 1rem;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        box-shadow: var(--shadow-light);
+        box-shadow: var(--shadow-sm);
     }
     
     .category-btn:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
+        box-shadow: var(--shadow-md);
         color: var(--white);
-        background: var(--primary-red);
+        background: var(--primary-blue);
     }
     
     .category-card:nth-child(2) .category-btn,
@@ -349,28 +359,34 @@
         color: var(--black);
     }
     
+    .category-card:nth-child(3) .category-btn,
+    .category-card:nth-child(7) .category-btn {
+        background: var(--gradient-primary);
+    }
+    
     /* Additional button styles for degree card */
     .estimate-btn {
         background: var(--gradient-yellow);
         color: var(--black);
         border: none;
         padding: 10px 20px;
-        border-radius: var(--border-radius-md);
+        border-radius: var(--radius-md);
         font-weight: 700;
         font-size: 0.9rem;
         transition: all 0.3s ease;
-        box-shadow: var(--shadow-light);
+        box-shadow: var(--shadow-sm);
         margin-top: 10px;
         width: 100%;
     }
     
     .estimate-btn:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-medium);
+        box-shadow: var(--shadow-md);
         background: var(--primary-yellow);
         color: var(--black);
     }
     
+    /* Benefits Section */
     .benefits-section {
         padding: 80px 0;
         background: var(--light-grey);
@@ -394,7 +410,7 @@
     
     .benefit-list li:hover {
         transform: translateX(8px);
-        color: var(--primary-red);
+        color: var(--primary-blue); /* Changed from primary-red */
     }
     
     .benefit-list li:last-child {
@@ -407,7 +423,7 @@
         font-weight: bold;
         font-size: 0.9rem;
         margin-right: 15px;
-        background: var(--primary-red);
+        background: var(--primary-blue); /* Changed from primary-red */
         width: 30px;
         height: 30px;
         min-width: 30px;
@@ -415,25 +431,26 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: var(--shadow-light);
+        box-shadow: var(--shadow-sm);
     }
     
     .benefits-image {
         max-width: 100%;
         height: auto;
-        border-radius: var(--border-radius-md);
-        box-shadow: var(--shadow-medium);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-md);
         transition: all 0.3s ease;
         border: 5px solid var(--white);
     }
     
     .benefits-image:hover {
         transform: scale(1.02);
-        box-shadow: var(--shadow-heavy);
+        box-shadow: var(--shadow-lg);
     }
     
+    /* CTA Section - Updated to Blue */
     .cta-section {
-        background: var(--dark-grey);
+        background: var(--gradient-primary); /* Changed from dark-grey */
         color: var(--white);
         padding: 60px 0;
         text-align: center;
@@ -462,22 +479,40 @@
         color: var(--black);
         font-weight: 700;
         padding: 15px 40px;
-        border-radius: var(--border-radius-md);
+        border-radius: var(--radius-md);
         border: none;
         font-size: 1.1rem;
         transition: all 0.3s ease;
-        box-shadow: var(--shadow-medium);
+        box-shadow: var(--shadow-md);
         position: relative;
         overflow: hidden;
     }
     
     .cta-btn:hover {
         transform: translateY(-3px);
-        box-shadow: var(--shadow-heavy);
+        box-shadow: var(--shadow-lg);
         color: var(--black);
     }
     
-    /* Responsive Design */
+    /* Degree Modal - Updated to Blue */
+    #degreeModal .modal-header {
+        background: var(--gradient-primary) !important;
+    }
+    
+    #degreeModal .btn-primary-custom {
+        background: var(--gradient-primary);
+    }
+    
+    /* Cluster Warning Modal */
+    #clusterWarningModal .modal-header {
+        background: var(--gradient-yellow);
+    }
+    
+    #clusterWarningModal .btn-primary-custom {
+        background: var(--gradient-primary);
+    }
+    
+    /* Responsive Design (unchanged) */
     @media (max-width: 1200px) {
         .hero-title {
             font-size: 2.2rem;
@@ -663,6 +698,7 @@
         }
     }
 </style>
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -913,7 +949,7 @@
 <div class="modal fade modal-custom" id="degreeModal" tabindex="-1" aria-labelledby="degreeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: var(--gradient-red);">
+            <div class="modal-header" style="background: var(--gradient-primary);">
                 <h5 class="modal-title text-white" id="degreeModalLabel">
                     <i class="fas fa-graduation-cap me-2"></i>Degree Courses Information
                 </h5>
@@ -924,12 +960,12 @@
                     <div class="mb-3" style="font-size: 4rem; color: var(--primary-yellow);">
                         <i class="fas fa-clock"></i>
                     </div>
-                    <h4 class="fw-bold text-danger">Course Checking Temporarily Unavailable</h4>
+                    <h4 class="fw-bold text-primary">Course Checking Temporarily Unavailable</h4>
                 </div>
                 
-                <div class="alert alert-warning alert-custom">
+                <div class="alert alert-info alert-custom">
                     <div class="d-flex align-items-start">
-                        <i class="fas fa-exclamation-triangle me-3 mt-1" style="color: var(--primary-yellow);"></i>
+                        <i class="fas fa-info-circle me-3 mt-1" style="color: var(--primary-blue);"></i>
                         <div>
                             <h6 class="alert-heading">Official Cluster Points Not Yet Released</h6>
                             <p class="mb-0">Degree course checking will open once the real cluster points are officially calculated and uploaded to the KUCCPS portal.</p>
@@ -939,7 +975,7 @@
                 
                 <div class="text-center mt-4">
                     <p class="text-muted mb-3">Meanwhile, you can estimate your cluster points:</p>
-                    <div class="p-3 mb-3" style="background: var(--light-grey); border-radius: var(--border-radius-md);">
+                    <div class="p-3 mb-3" style="background: var(--light-grey); border-radius: var(--radius-md);">
                         <h6 class="fw-bold mb-2">Estimate Your Cluster Points</h6>
                         <p class="small text-muted mb-2">Approximate calculation for all 20 clusters (Error margin ±5)</p>
                         <button class="btn btn-yellow-custom w-100" onclick="showClusterPointWarning()">
@@ -972,7 +1008,7 @@
             <div class="modal-body">
                 <div class="alert alert-warning alert-custom mb-4">
                     <div class="d-flex align-items-start">
-                        <i class="fas fa-exclamation-circle me-3 mt-1" style="font-size: 1.5rem; color: var(--primary-red);"></i>
+                        <i class="fas fa-exclamation-circle me-3 mt-1" style="font-size: 1.5rem; color: var(--primary-blue);"></i>
                         <div>
                             <h4 class="alert-heading mb-2">⚠️ NOTICE</h4>
                             <h5 class="mb-3">THIS SYSTEM ISN'T ACCURATE. (ERROR MARGIN ±5)</h5>
@@ -981,7 +1017,7 @@
                     </div>
                 </div>
                 
-                <div class="p-3 mb-4" style="background: var(--light-grey); border-radius: var(--border-radius-md);">
+                <div class="p-3 mb-4" style="background: var(--light-grey); border-radius: var(--radius-md);">
                     <h6 class="fw-bold mb-2">Service Details:</h6>
                     <ul class="mb-0">
                         <li>Approximate cluster point calculation for all 20 clusters</li>
@@ -1115,8 +1151,8 @@
         
         // Update copyright year
         const copyrightElement = document.querySelector('.copyright p');
-        if (copyrightElement && copyrightElement.textContent.includes('2025')) {
-            copyrightElement.textContent = copyrightElement.textContent.replace('2025', new Date().getFullYear());
+        if (copyrightElement && copyrightElement.textContent.includes('2026')) {
+            copyrightElement.textContent = copyrightElement.textContent.replace('2026', new Date().getFullYear());
         }
         
         // Prevent degree card link navigation
