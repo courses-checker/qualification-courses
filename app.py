@@ -13,6 +13,7 @@ from guide_routes import register_guides
 from flask import send_from_directory
 from requests.auth import HTTPBasicAuth
 import json
+import string 
 import re
 import google.generativeai as genai
 from google.generativeai import types
@@ -3278,7 +3279,7 @@ def save_user_payment(email, index_number, level, transaction_ref=None, amount=1
     if grade_data:
         print(f"📦 Grade data type: {grade_data.get('type', 'unknown')}")
     
-    # Create payment record
+    # Create payment record - initially without receipt
     payment_record = {
         'email': email,
         'index_number': index_number,
@@ -3286,7 +3287,7 @@ def save_user_payment(email, index_number, level, transaction_ref=None, amount=1
         'transaction_ref': transaction_ref,
         'payment_amount': amount,
         'payment_confirmed': False,
-        'grade_data': grade_data,  # 🔥 CRITICAL: Store grade data
+        'grade_data': grade_data,
         'created_at': datetime.now(),
         'updated_at': datetime.now()
     }
@@ -3294,7 +3295,6 @@ def save_user_payment(email, index_number, level, transaction_ref=None, amount=1
     # If no database, store in session
     if not database_connected:
         session_key = f'{level}_payment_{index_number}'
-        # Convert datetime to string for session
         payment_record['created_at'] = payment_record['created_at'].isoformat()
         payment_record['updated_at'] = payment_record['updated_at'].isoformat()
         session[session_key] = payment_record
@@ -3303,7 +3303,6 @@ def save_user_payment(email, index_number, level, transaction_ref=None, amount=1
     
     # Save to database
     try:
-        # Check if record exists
         existing = user_payments_collection.find_one({
             'email': email, 
             'index_number': index_number, 
@@ -3311,29 +3310,21 @@ def save_user_payment(email, index_number, level, transaction_ref=None, amount=1
         })
         
         if existing:
-            # Update existing record
             result = user_payments_collection.update_one(
                 {'_id': existing['_id']},
                 {'$set': payment_record}
             )
             if result.modified_count > 0:
                 print(f"✅ Existing payment record updated for {email}")
-            else:
-                print(f"ℹ️ No changes made to payment record for {email}")
         else:
-            # Insert new record
             result = user_payments_collection.insert_one(payment_record)
             if result.inserted_id:
                 print(f"✅ New payment record created for {email} with id: {result.inserted_id}")
-            else:
-                print(f"❌ Failed to insert payment record for {email}")
                 
     except Exception as e:
         print(f"❌ Error saving user payment to database: {str(e)}")
-        import traceback
         traceback.print_exc()
         
-        # Fallback to session
         session_key = f'{level}_payment_{index_number}'
         payment_record['created_at'] = payment_record['created_at'].isoformat()
         payment_record['updated_at'] = payment_record['updated_at'].isoformat()
@@ -3761,9 +3752,9 @@ def check_existing_user_data(email, index_number):
 
 
 def mark_payment_confirmed(transaction_ref, payment_receipt=None):
-    """Mark payment as confirmed - works for both Paystack and M-Pesa"""
+    """Mark payment as confirmed - stores M-PESA receipt"""
     if not payment_receipt:
-        payment_receipt = transaction_ref  # Use transaction ref as receipt if none provided
+        payment_receipt = transaction_ref
         
     print(f"🔍 Confirming payment: {transaction_ref} with receipt: {payment_receipt}")
     
@@ -3778,7 +3769,7 @@ def mark_payment_confirmed(transaction_ref, payment_receipt=None):
                 level = session[key].get('level')
                 if level:
                     session[f'paid_{level}'] = True
-                    print(f"✅ Session marked as paid for {level}")
+                    session['transaction_ref'] = payment_receipt  # Store M-PESA receipt
                 
                 payment_found = True
                 break
@@ -3789,21 +3780,22 @@ def mark_payment_confirmed(transaction_ref, payment_receipt=None):
             {'transaction_ref': transaction_ref},
             {'$set': {
                 'payment_confirmed': True,
-                'payment_receipt': payment_receipt,
+                'payment_receipt': payment_receipt,  # This will be UBG9D6ZO3J
                 'payment_date': datetime.now()
             }}
         )
         
         if result.modified_count > 0:
-            print(f"✅ Payment confirmed in database: {transaction_ref} with receipt: {payment_receipt}")
+            print(f"✅ Payment confirmed in database: {transaction_ref}")
+            print(f"✅ M-PESA Receipt saved: {payment_receipt}")
             
-            # Also update session for consistency
             payment_data = user_payments_collection.find_one({'transaction_ref': transaction_ref})
             if payment_data:
                 level = payment_data.get('level')
                 if level:
                     session[f'paid_{level}'] = True
-                    print(f"✅ Session updated for {level}")
+                    session['transaction_ref'] = payment_receipt  # Store M-PESA receipt in session
+                    print(f"✅ Session updated with M-PESA receipt: {payment_receipt}")
             
             return True
         else:
@@ -3816,99 +3808,110 @@ def mark_payment_confirmed(transaction_ref, payment_receipt=None):
 
 # --- Course Processing & Qualification Functions ---
 def process_courses_after_payment(email, index_number, flow):
-    """Process and save courses after payment confirmation - WITH LOCK to prevent duplicates"""
+    """Process and save courses after payment confirmation - WITH CACHE TRACKING"""
     cache_key = f"{email}_{index_number}_{flow}"
     
-    # Check if already processing
+    # Check if already processing or completed
     if cache_key in course_processing_cache:
-        print(f"🔄 Course processing already in progress for {cache_key}")
-        return course_processing_cache[cache_key]
+        cache_data = course_processing_cache[cache_key]
+        if isinstance(cache_data, dict):
+            if cache_data.get('status') == 'completed':
+                print(f"✅ Courses already processed for {cache_key}")
+                return True
+            elif cache_data.get('status') == 'processing':
+                print(f"🔄 Course processing already in progress for {cache_key}")
+                return True
     
     print(f"🎯 PROCESSING COURSES for {flow} after payment confirmation")
     
     with course_processing_lock:
         try:
-            # Double-check we're not already processing
-            if cache_key in course_processing_cache:
-                return course_processing_cache[cache_key]
-            
             # Mark as processing
-            course_processing_cache[cache_key] = False
+            course_processing_cache[cache_key] = {
+                'status': 'processing',
+                'started_at': datetime.now().isoformat()
+            }
             
-            # Check if courses already exist in database (prevent re-processing)
+            # Check if courses already exist in database
             existing_courses = get_user_courses_data(email, index_number, flow)
             if existing_courses and existing_courses.get('courses'):
                 print(f"✅ Courses already exist in database for {flow}, skipping processing")
-                course_processing_cache[cache_key] = True
+                course_processing_cache[cache_key] = {
+                    'status': 'completed',
+                    'courses_count': len(existing_courses['courses']),
+                    'completed_at': datetime.now().isoformat()
+                }
                 return True
             
             qualifying_courses = []
-            user_grades = {}
-            user_mean_grade = None
-            user_cluster_points = {}
             
-            # Get the appropriate data based on flow
-            if flow == 'degree':
-                user_grades = session.get('degree_grades', {})
-                user_cluster_points = session.get('degree_cluster_points', {})
+            # Get payment data to retrieve stored grades
+            payment_data = user_payments_collection.find_one({
+                'email': email,
+                'index_number': index_number,
+                'level': flow
+            })
+            
+            if payment_data and 'grade_data' in payment_data:
+                grade_data = payment_data.get('grade_data', {})
+                print(f"📊 Retrieved grade data from payment record")
                 
-                if not user_grades or not user_cluster_points:
-                    print(f"⚠️ Missing required grade data for degree")
-                    course_processing_cache[cache_key] = False
-                    return False
-                    
-                print(f"📊 Processing degree with {len(user_grades)} grades and {len(user_cluster_points)} cluster points")
-                qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
-                
-            elif flow == 'diploma':
-                user_grades = session.get('diploma_grades', {})
-                user_mean_grade = session.get('diploma_mean_grade', '')
-                qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'certificate':
-                user_grades = session.get('certificate_grades', {})
-                user_mean_grade = session.get('certificate_mean_grade', '')
-                qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'artisan':
-                user_grades = session.get('artisan_grades', {})
-                user_mean_grade = session.get('artisan_mean_grade', '')
-                qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-                
-            elif flow == 'kmtc':
-                user_grades = session.get('kmtc_grades', {})
-                user_mean_grade = session.get('kmtc_mean_grade', '')
-                qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
-            elif flow == 'ttc':
-                user_grades = session.get('ttc_grades', {})
-                user_mean_grade = session.get('ttc_mean_grade', '')
-                qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+                if flow == 'degree':
+                    user_grades = grade_data.get('grades', {})
+                    user_cluster_points = grade_data.get('cluster_points', {})
+                    qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
+                elif flow == 'diploma':
+                    user_grades = grade_data.get('grades', {})
+                    user_mean_grade = grade_data.get('mean_grade', '')
+                    qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
+                elif flow == 'certificate':
+                    user_grades = grade_data.get('grades', {})
+                    user_mean_grade = grade_data.get('mean_grade', '')
+                    qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
+                elif flow == 'artisan':
+                    user_grades = grade_data.get('grades', {})
+                    user_mean_grade = grade_data.get('mean_grade', '')
+                    qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
+                elif flow == 'kmtc':
+                    user_grades = grade_data.get('grades', {})
+                    user_mean_grade = grade_data.get('mean_grade', '')
+                    qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+                elif flow == 'ttc':
+                    user_grades = grade_data.get('grades', {})
+                    user_mean_grade = grade_data.get('mean_grade', '')
+                    qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
             
             # Save courses to database
             if qualifying_courses:
                 print(f"💾 Saving {len(qualifying_courses)} courses to database for {flow}")
                 save_user_courses(email, index_number, flow, qualifying_courses)
-                print(f"✅ Processed and saved {len(qualifying_courses)} {flow} courses")
-                course_processing_cache[cache_key] = True
-                
-                # Clear from cache after successful processing (with delay)
-                threading.Timer(30.0, lambda: course_processing_cache.pop(cache_key, None)).start()
-                return True
+                course_count = len(qualifying_courses)
             else:
                 print(f"⚠️ No qualifying courses found for {flow}")
-                course_processing_cache[cache_key] = False
-                return False
+                # Save empty record to mark as processed
+                save_user_courses(email, index_number, flow, [])
+                course_count = 0
+            
+            # Update cache with result
+            course_processing_cache[cache_key] = {
+                'status': 'completed',
+                'courses_count': course_count,
+                'completed_at': datetime.now().isoformat()
+            }
+            
+            print(f"✅ Processed {course_count} {flow} courses")
+            return True
                 
         except Exception as e:
             print(f"❌ Error processing courses after payment: {str(e)}")
             import traceback
             traceback.print_exc()
-            # Remove from cache on error
-            course_processing_cache.pop(cache_key, None)
+            course_processing_cache[cache_key] = {
+                'status': 'failed',
+                'error': str(e),
+                'failed_at': datetime.now().isoformat()
+            }
             return False
-
-
-
 
 
 def update_transaction_ref(email, index_number, level, transaction_ref):
@@ -3946,7 +3949,6 @@ def update_transaction_ref(email, index_number, level, transaction_ref):
         print(f"✅ Transaction reference updated in database: {transaction_ref}")
     except Exception as e:
         print(f"❌ Error updating transaction reference: {str(e)}")
-        # Fallback to session
         session_key = f'{level}_payment_{index_number}'
         session[session_key] = {
             'email': email,
@@ -5191,12 +5193,54 @@ def check_payment(flow):
     user_payment = get_user_payment(email, index_number, flow)
     paid = bool(user_payment and user_payment.get('payment_confirmed'))
     return {'paid': paid}
-
+def generate_simple_reference(flow, database_check=True):
+    """
+    Generate a simple, user-friendly reference.
+    Format: FLOW-XXXX where XXXX are random digits
+    Example: DIPL-1234, CERT-5678, KMTC-9012
+    
+    If database_check is True, ensures uniqueness against existing payments.
+    """
+    # Map flows to simple prefixes
+    prefix_map = {
+        'degree': 'DEG',
+        'diploma': 'DIP',
+        'certificate': 'CERT',
+        'artisan': 'ART',
+        'kmtc': 'KMTC',
+        'ttc': 'TTC'
+    }
+    
+    # Get prefix, default to first 4 letters uppercase
+    prefix = prefix_map.get(flow, flow[:4].upper())
+    
+    max_attempts = 10
+    attempt = 0
+    
+    while attempt < max_attempts:
+        # Generate 4 random digits
+        random_digits = ''.join(random.choices(string.digits, k=4))
+        reference = f"{prefix}-{random_digits}"
+        
+        # Check uniqueness if requested
+        if database_check and database_connected:
+            existing = user_payments_collection.find_one({'transaction_ref': reference})
+            if not existing:
+                return reference
+        else:
+            return reference
+        
+        attempt += 1
+    
+    # Fallback: add timestamp to ensure uniqueness
+    timestamp = datetime.now().strftime('%H%M')
+    random_part = ''.join(random.choices(string.digits, k=2))
+    return f"{prefix}-{timestamp}-{random_part}"
 @app.route('/payment/<flow>', methods=['GET', 'POST'])
 def payment(flow):
-    """Payment page with Paystack integration"""
+    """Payment page with Paystack integration - ENHANCED with simple references"""
     
-    # Handle GET request - display payment page
+    # ========== GET REQUEST - DISPLAY PAYMENT PAGE ==========
     if request.method == 'GET':
         # Check if user has submitted grades and details
         if not session.get('email') or not session.get('index_number'):
@@ -5221,7 +5265,7 @@ def payment(flow):
                              is_first_category=is_first_category,
                              paystack_public_key=PAYSTACK_PUBLIC_KEY)
     
-    # Handle POST request - initialize Paystack payment
+    # ========== POST REQUEST - INITIALIZE PAYSTACK PAYMENT ==========
     elif request.method == 'POST':
         if not session.get('email') or not session.get('index_number'):
             return {'success': False, 'error': 'Session data missing'}, 400
@@ -5237,46 +5281,55 @@ def payment(flow):
         print(f"💳 Initializing Paystack payment for {flow}, amount: {amount}, email: {email}")
         print(f"🔍 Original index_number: {index_number}")
         
-        # 🔥 CRITICAL: Generate callback URL based on the actual request
-        # This will work in BOTH production and development automatically
+        # ========== GENERATE CALLBACK URL ==========
         host = request.host
         scheme = request.scheme
         
-        # For local development, ensure we use the correct scheme
+        # For local development - use HTTP
         if 'localhost' in host or '127.0.0.1' in host:
-            # Local development - use HTTP
             callback_url = f"http://{host}/paystack/callback"
         else:
-            # Production (Render.com or custom domain) - use HTTPS
+            # Production - use HTTPS
             callback_url = f"https://{host}/paystack/callback"
         
-        # Special case for ngrok if you're using it
+        # Special case for ngrok
         if 'ngrok.io' in host:
             callback_url = f"https://{host}/paystack/callback"
         
         print(f"📞 Generated callback URL: {callback_url}")
         
-        # Sanitize the index number - remove all non-alphanumeric characters
-        safe_index = re.sub(r'[^a-zA-Z0-9]', '', index_number)
-        print(f"🔍 Sanitized index_number: {safe_index}")
+        # ========== GENERATE SIMPLE REFERENCE ==========
+        reference = generate_simple_reference(flow)
         
-        # Generate unique reference with ONLY alphanumeric characters and hyphens
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        random_num = random.randint(100, 999)
-        reference = f"KUCCPS-{flow}-{safe_index}-{timestamp}-{random_num}"
+        # Check if reference already exists (rare but possible)
+        if database_connected:
+            existing = user_payments_collection.find_one({'transaction_ref': reference})
+            retry_count = 0
+            while existing and retry_count < 5:
+                print(f"⚠️ Reference {reference} already exists, generating new one...")
+                reference = generate_simple_reference(flow)
+                existing = user_payments_collection.find_one({'transaction_ref': reference})
+                retry_count += 1
+            
+            if retry_count >= 5:
+                # Fallback to timestamp-based reference if too many collisions
+                timestamp = datetime.now().strftime('%H%M')
+                random_part = ''.join(random.choices(string.digits, k=3))
+                reference = f"{flow[:4].upper()}-{timestamp}-{random_part}"
+                print(f"⚠️ Using fallback reference: {reference}")
         
-        # Ensure reference is not too long (Paystack max is 100 chars)
-        if len(reference) > 100:
-            reference = reference[:100]
+        print(f"🔍 Generated simple reference: {reference}")
         
-        print(f"🔍 Generated reference: {reference}")
+        # Store reference in session for later use
+        session['transaction_ref'] = reference
+        session.modified = True
         
-        # Initialize Paystack payment with dynamic callback URL
+        # ========== INITIALIZE PAYSTACK PAYMENT ==========
         result = initialize_paystack_payment(
             email=email, 
             amount=amount, 
             reference=reference,
-            callback_url=callback_url  # Pass the dynamic URL
+            callback_url=callback_url
         )
         
         if result.get('success'):
@@ -5285,12 +5338,14 @@ def payment(flow):
             # Save transaction reference to database
             update_transaction_ref(email, session.get('index_number'), flow, transaction_ref)
             
+            print(f"✅ Payment initialized successfully with reference: {transaction_ref}")
+            
             return {
                 'success': True,
                 'authorization_url': result['authorization_url'],
                 'reference': transaction_ref,
                 'amount': amount,
-                'redirect_url': result['authorization_url']  # Redirect to Paystack
+                'redirect_url': result['authorization_url']
             }
 
         error_message = result.get('error', 'Failed to initialize payment. Try again.')
@@ -5298,11 +5353,12 @@ def payment(flow):
         return {'success': False, 'error': error_message}, 400
 @app.route('/paystack/callback')
 def paystack_callback():
-    """Paystack payment callback handler - ENHANCED for production"""
+    """Paystack payment callback handler - CAPTURES M-PESA RECEIPT"""
+    from flask import url_for
+    
     reference = request.args.get('reference')
     trxref = request.args.get('trxref')
     
-    # Use reference or trxref
     payment_ref = reference or trxref
     
     if not payment_ref:
@@ -5311,14 +5367,17 @@ def paystack_callback():
     
     print(f"📥 Paystack callback received with reference: {payment_ref}")
     
-    # Verify payment
+    # Verify payment and get M-PESA receipt
     verification_result = verify_paystack_payment(payment_ref)
     
     if verification_result.get('success') and verification_result.get('paid'):
-        # Payment confirmed successfully
-        print(f"✅ Paystack payment confirmed: {payment_ref}")
+        # Get the M-PESA receipt - this is what user receives via SMS
+        mpesa_receipt = verification_result.get('mpesa_receipt')
         
-        # 🔥 CRITICAL: Find payment record in database
+        print(f"✅ Paystack payment confirmed")
+        print(f"💰 M-PESA Receipt from SMS: {mpesa_receipt}")  # Will show like UBG9D6ZO3J
+        
+        # Find payment record
         flow = None
         email = None
         index_number = None
@@ -5332,123 +5391,114 @@ def paystack_callback():
                 print(f"🔍 Found payment record: {email}, {index_number}, {flow}")
         
         if flow and email and index_number:
-            # Mark payment as confirmed
-            mark_payment_confirmed(payment_ref, payment_ref)
+            # Mark payment as confirmed - USE M-PESA RECEIPT as the primary reference
+            mark_payment_confirmed(payment_ref, mpesa_receipt or payment_ref)
             
-            # 🔥 FIX: Check if courses already exist
-            existing_courses = get_user_courses_data(email, index_number, flow)
-            if existing_courses and existing_courses.get('courses'):
-                print(f"✅ Courses already exist for {flow}, redirecting to results")
-                
-                # 🔥 CRITICAL: Set session data BEFORE redirect
-                session.clear()  # Clear old session data
-                session[f'paid_{flow}'] = True
-                session['email'] = email
-                session['index_number'] = index_number
-                session['current_flow'] = flow
-                session.permanent = True
-                session.modified = True
-                
-                # Force session save
-                from flask import session as flask_session
-                flask_session.modified = True
-                
-                print(f"✅ Session set with paid_{flow}=True, redirecting to results")
-                flash("Payment verified! Your courses are ready.", "success")
-                
-                # Use absolute URL to ensure proper redirect
-                from flask import url_for
-                results_url = url_for('show_results', flow=flow, _external=True)
-                print(f"🔗 Redirecting to: {results_url}")
-                
-                return redirect(results_url)
+            # Store M-PESA receipt prominently in payment record
+            if mpesa_receipt and database_connected:
+                user_payments_collection.update_one(
+                    {'transaction_ref': payment_ref},
+                    {'$set': {
+                        'mpesa_receipt': mpesa_receipt,  # Store the SMS receipt (UBG9D6ZO3J)
+                        'payment_method': 'M-PESA',
+                        'payment_channel': verification_result.get('channel'),
+                        'phone_number': verification_result.get('authorization', {}).get('mobile_money_number')
+                    }}
+                )
+                print(f"✅ Stored M-PESA SMS receipt: {mpesa_receipt}")
             
-            # 🔥 FIX: Process courses synchronously
-            print(f"🎯 Processing courses for {email}, {flow}")
+            # Set session data - USE M-PESA RECEIPT as the main reference
+            session.clear()
+            session[f'paid_{flow}'] = True
+            session['email'] = email
+            session['index_number'] = index_number
+            session['current_flow'] = flow
+            session['transaction_ref'] = mpesa_receipt or payment_ref  # Use M-PESA receipt from SMS
+            session['paystack_ref'] = payment_ref  # Keep Paystack ref as backup
+            session.permanent = True
+            session.modified = True
             
-            # Get grade data from payment record
-            qualifying_courses = []
-            payment_full = user_payments_collection.find_one({'transaction_ref': payment_ref})
+            print(f"🎯 Payment confirmed. User will see receipt: {mpesa_receipt}")
+            print(f"🔗 Redirecting to payment-wait for {flow}")
             
-            if payment_full and 'grade_data' in payment_full:
-                grade_data = payment_full.get('grade_data', {})
-                print(f"📊 Retrieved grade data from payment record")
-                
-                # Generate courses based on flow
-                if flow == 'degree':
-                    user_grades = grade_data.get('grades', {})
-                    user_cluster_points = grade_data.get('cluster_points', {})
-                    qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
-                elif flow == 'diploma':
-                    user_grades = grade_data.get('grades', {})
-                    user_mean_grade = grade_data.get('mean_grade', '')
-                    qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
-                elif flow == 'certificate':
-                    user_grades = grade_data.get('grades', {})
-                    user_mean_grade = grade_data.get('mean_grade', '')
-                    qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
-                elif flow == 'artisan':
-                    user_grades = grade_data.get('grades', {})
-                    user_mean_grade = grade_data.get('mean_grade', '')
-                    qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
-                elif flow == 'kmtc':
-                    user_grades = grade_data.get('grades', {})
-                    user_mean_grade = grade_data.get('mean_grade', '')
-                    qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
-                elif flow == 'ttc':
-                    user_grades = grade_data.get('grades', {})
-                    user_mean_grade = grade_data.get('mean_grade', '')
-                    qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+            # Start background processing
+            import threading
+            def process_courses_background():
+                try:
+                    print(f"🔄 Background processing started for {flow}")
+                    payment_full = user_payments_collection.find_one({'transaction_ref': payment_ref})
+                    if payment_full and 'grade_data' in payment_full:
+                        grade_data = payment_full.get('grade_data', {})
+                        
+                        qualifying_courses = []
+                        
+                        if flow == 'degree':
+                            user_grades = grade_data.get('grades', {})
+                            user_cluster_points = grade_data.get('cluster_points', {})
+                            qualifying_courses = get_qualifying_courses(user_grades, user_cluster_points)
+                        elif flow == 'diploma':
+                            user_grades = grade_data.get('grades', {})
+                            user_mean_grade = grade_data.get('mean_grade', '')
+                            qualifying_courses = get_qualifying_diploma_courses(user_grades, user_mean_grade)
+                        elif flow == 'certificate':
+                            user_grades = grade_data.get('grades', {})
+                            user_mean_grade = grade_data.get('mean_grade', '')
+                            qualifying_courses = get_qualifying_certificate_courses(user_grades, user_mean_grade)
+                        elif flow == 'artisan':
+                            user_grades = grade_data.get('grades', {})
+                            user_mean_grade = grade_data.get('mean_grade', '')
+                            qualifying_courses = get_qualifying_artisan_courses(user_grades, user_mean_grade)
+                        elif flow == 'kmtc':
+                            user_grades = grade_data.get('grades', {})
+                            user_mean_grade = grade_data.get('mean_grade', '')
+                            qualifying_courses = get_qualifying_kmtc_courses(user_grades, user_mean_grade)
+                        elif flow == 'ttc':
+                            user_grades = grade_data.get('grades', {})
+                            user_mean_grade = grade_data.get('mean_grade', '')
+                            qualifying_courses = get_qualifying_ttc(user_grades, user_mean_grade)
+                        
+                        if qualifying_courses:
+                            save_user_courses(email, index_number, flow, qualifying_courses)
+                            print(f"✅ Background: Generated and saved {len(qualifying_courses)} courses")
+                        else:
+                            save_user_courses(email, index_number, flow, [])
+                except Exception as e:
+                    print(f"❌ Background processing error: {str(e)}")
             
-            # Save courses to database
-            if qualifying_courses:
-                save_user_courses(email, index_number, flow, qualifying_courses)
-                print(f"✅ Generated and saved {len(qualifying_courses)} courses")
-                
-                # 🔥 CRITICAL: Set session data BEFORE redirect
-                session.clear()  # Clear old session data
-                session[f'paid_{flow}'] = True
-                session['email'] = email
-                session['index_number'] = index_number
-                session['current_flow'] = flow
-                session.permanent = True
-                session.modified = True
-                
-                # Force session save
-                from flask import session as flask_session
-                flask_session.modified = True
-                
-                print(f"✅ Session set with paid_{flow}=True, redirecting to results")
-                flash(f"Payment successful! Found {len(qualifying_courses)} courses matching your grades.", "success")
-                
-                # Use absolute URL to ensure proper redirect
-                from flask import url_for
-                results_url = url_for('show_results', flow=flow, _external=True)
-                print(f"🔗 Redirecting to: {results_url}")
-                
-                return redirect(results_url)
-            else:
-                print(f"⚠️ No qualifying courses found for {flow}")
-                flash("Payment successful but no qualifying courses found for your grades.", "warning")
-                
-                # Still set session to allow access
-                session[f'paid_{flow}'] = True
-                session['email'] = email
-                session['index_number'] = index_number
-                session.modified = True
-                
-                return redirect(url_for('index', _external=True))
+            thread = threading.Thread(target=process_courses_background)
+            thread.daemon = True
+            thread.start()
+            
+            wait_url = url_for('payment_wait', flow=flow, _external=True)
+            print(f"🔗 Redirecting to payment-wait: {wait_url}")
+            return redirect(wait_url)
+            
         else:
-            # Couldn't find payment record
             print(f"❌ No payment record found for reference: {payment_ref}")
-            flash("Payment successful but couldn't find your course data. Please use 'Already Made Payment' with your reference.", "warning")
-            return redirect(url_for('verify_payment_page', _external=True))
+            flash("Payment successful but couldn't find your course data. Please use 'Already Made Payment' with your M-PESA receipt.", "warning")
+            return redirect(url_for('verify_payment', _external=True))
     else:
-        # Payment failed or not completed
         error_msg = verification_result.get('message', 'Payment verification failed')
         print(f"❌ Payment verification failed: {error_msg}")
         flash(f"Payment verification failed: {error_msg}", "error")
         return redirect(url_for('index', _external=True))
+    
+@app.route('/payment-wait/<flow>')
+def payment_wait(flow):
+    """Payment waiting page - shows processing status while courses are generated"""
+    # Check if user has paid
+    if not session.get(f'paid_{flow}'):
+        flash("Payment not confirmed", "error")
+        return redirect(url_for('payment', flow=flow))
+    
+    # Check if user has valid session
+    if not session.get('email') or not session.get('index_number'):
+        flash("Session expired", "error")
+        return redirect(url_for('index'))
+    
+    print(f"⏳ Showing payment-wait page for {flow}")
+    
+    return render_template('payment_wait.html', flow=flow)
 @app.route('/paystack/webhook', methods=['POST'])
 def paystack_webhook():
     """
@@ -5611,19 +5661,18 @@ def verify_paystack_payment_page():
 def initialize_paystack_payment(email, amount, reference=None, callback_url=None):
     """
     Initialize Paystack payment transaction with dynamic callback URL
+    Now accepts simple references like DIPL-1234
     """
     try:
         if not reference:
-            # Generate a safe reference if none provided
-            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-            random_num = random.randint(1000, 9999)
-            reference = f"KUCCPS-{timestamp}-{random_num}"
+            # Generate a simple reference if none provided
+            reference = generate_simple_reference('degree', database_check=False)
         else:
-            # 🔥 SAFETY: Sanitize the provided reference
-            # Remove any invalid characters (only allow alphanumeric, hyphen, underscore)
+            # Ensure reference is not too long (Paystack max is 100 chars)
+            # Our simple references are only 8-10 chars, so this is fine
             reference = re.sub(r'[^a-zA-Z0-9_-]', '', reference)
         
-        # Ensure reference is not too long (Paystack max is 100 chars)
+        # Ensure reference is not too long
         if len(reference) > 100:
             reference = reference[:100]
         
@@ -5637,10 +5686,7 @@ def initialize_paystack_payment(email, amount, reference=None, callback_url=None
             "Content-Type": "application/json"
         }
         
-        # CRITICAL: Use the provided callback_url
-        # This will be set dynamically based on the actual request
         if not callback_url:
-            # Fallback (shouldn't happen)
             if os.getenv('FLASK_ENV') == 'production':
                 callback_url = "https://kuccps-courses-qdbi.onrender.com/paystack/callback"
             else:
@@ -5719,7 +5765,8 @@ def initialize_paystack_payment(email, amount, reference=None, callback_url=None
 
 def verify_paystack_payment(reference):
     """
-    Verify Paystack payment status
+    Verify Paystack payment status and extract M-PESA receipt
+    Returns the actual M-PESA receipt that user gets via SMS (like UBG9D6ZO3J)
     """
     try:
         headers = {
@@ -5739,21 +5786,41 @@ def verify_paystack_payment(reference):
         
         if response.status_code == 200:
             result = response.json()
-            print(f"✅ Paystack verification successful: {json.dumps(result, indent=2)}")
             
             if result['status'] and result['data']['status'] == 'success':
-                # Payment successful
+                data = result['data']
+                
+                # Extract M-PESA receipt (like UBG9D6ZO3J)
+                mpesa_receipt = None
+                
+                # Paystack returns the M-PESA receipt in receipt_number field
+                if data.get('receipt_number'):
+                    mpesa_receipt = data['receipt_number']
+                    print(f"✅ Found M-PESA receipt in receipt_number: {mpesa_receipt}")
+                
+                # For test mode, Paystack uses dummy receipts
+                if mpesa_receipt == '10101' and os.getenv('PAYSTACK_MODE') == 'test':
+                    # In test mode, generate a realistic-looking receipt
+                    import random
+                    import string
+                    chars = string.ascii_uppercase + string.digits
+                    mpesa_receipt = ''.join(random.choices(chars, k=9))
+                    print(f"🧪 Test mode: Generated test receipt: {mpesa_receipt}")
+                
+                print(f"💰 Final M-PESA Receipt: {mpesa_receipt}")
+                
                 return {
                     'success': True,
                     'paid': True,
-                    'amount': result['data']['amount'] / 100,  # Convert back from kobo
-                    'reference': result['data']['reference'],
-                    'transaction_date': result['data']['transaction_date'],
-                    'channel': result['data']['channel'],
-                    'customer': result['data']['customer']
+                    'amount': data['amount'] / 100,
+                    'reference': data['reference'],
+                    'mpesa_receipt': mpesa_receipt,
+                    'transaction_date': data['transaction_date'],
+                    'channel': data['channel'],
+                    'customer': data['customer'],
+                    'authorization': data.get('authorization', {})
                 }
             else:
-                # Payment not successful
                 return {
                     'success': True,
                     'paid': False,
@@ -5763,16 +5830,7 @@ def verify_paystack_payment(reference):
         else:
             error_msg = f"Paystack verification API returned status {response.status_code}"
             print(f"❌ {error_msg}")
-            
-            try:
-                error_details = response.json()
-                return {
-                    'success': False,
-                    'paid': False,
-                    'error': error_details.get('message', error_msg)
-                }
-            except:
-                return {'success': False, 'paid': False, 'error': error_msg}
+            return {'success': False, 'paid': False, 'error': error_msg}
                 
     except Exception as e:
         error_msg = f"Error verifying Paystack payment: {str(e)}"
@@ -5780,8 +5838,6 @@ def verify_paystack_payment(reference):
         import traceback
         traceback.print_exc()
         return {'success': False, 'paid': False, 'error': error_msg}
-
-
 def get_paystack_banks():
     """
     Get list of banks for Paystack (for UI purposes)
@@ -5810,7 +5866,7 @@ def get_paystack_banks():
         return []
 @app.route('/check-courses-ready/<flow>')
 def check_courses_ready(flow):
-    """Check if courses have been processed and are ready to display - SIMPLIFIED"""
+    """Check if courses have been processed and are ready to display"""
     email = session.get('email')
     index_number = session.get('index_number')
     
@@ -5837,10 +5893,6 @@ def check_courses_ready(flow):
                 course_count = len(courses_data['courses'])
                 print(f"✅ COURSES READY IN DATABASE: Found {course_count} courses for {flow}")
                 
-                # Mark as paid in session
-                session[f'paid_{flow}'] = True
-                session.modified = True
-                
                 return jsonify({
                     'ready': True,
                     'courses_count': course_count,
@@ -5848,11 +5900,10 @@ def check_courses_ready(flow):
                     'message': f'Found {course_count} courses matching your grades!',
                     'status': 'courses_ready'
                 })
-                
         except Exception as e:
             print(f"❌ Error checking database for courses: {str(e)}")
     
-    # 🔥 SECOND: Check processing status
+    # 🔥 SECOND: Check processing status from cache
     cache_key = f"{email}_{index_number}_{flow}"
     
     if cache_key in course_processing_cache:
@@ -5861,42 +5912,15 @@ def check_courses_ready(flow):
             status = cache_data.get('status', 'processing')
             
             if status == 'completed':
-                # Courses should now be in database, check again
-                if database_connected:
-                    try:
-                        courses_data = user_courses_collection.find_one({
-                            'email': email,
-                            'index_number': index_number,
-                            'level': flow
-                        })
-                        
-                        if courses_data and courses_data.get('courses'):
-                            course_count = len(courses_data['courses'])
-                            print(f"✅ PROCESSING COMPLETED: {course_count} courses ready for {flow}")
-                            
-                            session[f'paid_{flow}'] = True
-                            session.modified = True
-                            
-                            return jsonify({
-                                'ready': True,
-                                'courses_count': course_count,
-                                'redirect_url': url_for('show_results', flow=flow),
-                                'message': f'Processing complete! Found {course_count} courses.',
-                                'status': 'processing_completed'
-                            })
-                    except Exception as e:
-                        print(f"❌ Error checking database after processing: {e}")
-                
-                # Even if no courses found, processing is complete
-                session[f'paid_{flow}'] = True
-                session.modified = True
+                courses_count = cache_data.get('courses_count', 0)
+                print(f"✅ PROCESSING COMPLETED: {courses_count} courses for {flow}")
                 
                 return jsonify({
                     'ready': True,
-                    'courses_count': 0,
+                    'courses_count': courses_count,
                     'redirect_url': url_for('show_results', flow=flow),
-                    'message': 'Processing complete. No qualifying courses found.',
-                    'status': 'processing_completed_no_courses'
+                    'message': f'Processing complete! Found {courses_count} courses.',
+                    'status': 'processing_completed'
                 })
             
             elif status == 'processing':
@@ -5919,39 +5943,36 @@ def check_courses_ready(flow):
                     'status': 'processing_failed'
                 })
     
-    # 🔥 THIRD: No processing in cache, check if payment is confirmed
-    if not session.get(f'paid_{flow}'):
-        print(f"❌ PAYMENT NOT CONFIRMED: {flow} payment not confirmed yet")
-        return jsonify({
-            'ready': False,
-            'message': 'Payment not confirmed yet',
-            'should_check_payment': True,
-            'payment_check_url': url_for('check_payment_status', flow=flow),
-            'status': 'waiting_for_payment'
-        })
+    # 🔥 THIRD: Payment confirmed but no cache entry yet - start processing
+    if session.get(f'paid_{flow}'):
+        print(f"⚠️ Payment confirmed but courses not found. Triggering processing...")
+        
+        success = process_courses_after_payment(email, index_number, flow)
+        
+        if success:
+            return jsonify({
+                'ready': False,
+                'message': 'Course processing started... Please wait.',
+                'processing': True,
+                'check_again': True,
+                'check_delay': 2000,
+                'status': 'processing_started'
+            })
+        else:
+            return jsonify({
+                'ready': False,
+                'message': 'Failed to start course processing.',
+                'error': True,
+                'status': 'processing_start_failed'
+            })
     
-    # 🔥 FOURTH: Payment confirmed but no courses yet
-    print(f"⚠️ Payment confirmed but courses not found. Triggering processing...")
-    
-    success = process_courses_after_payment(email, index_number, flow)
-    
-    if success:
-        return jsonify({
-            'ready': False,
-            'message': 'Course processing started... Please wait.',
-            'processing': True,
-            'check_again': True,
-            'check_delay': 2000,
-            'status': 'processing_started'
-        })
-    else:
-        return jsonify({
-            'ready': False,
-            'message': 'Failed to start course processing.',
-            'error': True,
-            'status': 'processing_start_failed'
-        })
-    
+    # 🔥 FOURTH: Payment not confirmed yet
+    return jsonify({
+        'ready': False,
+        'message': 'Payment not confirmed yet',
+        'should_check_payment': True,
+        'status': 'waiting_for_payment'
+    })
 @app.route('/test-gemini')
 def test_gemini():
     """Test if Gemini is working"""
